@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="VeriNews AI - Trusted AI Fact Verification Platform. Instantly verify news claims, articles, and URLs against trusted sources.">
+    <meta name="keywords" content="Verify News, AI Fact Checking, Fact Check, VeriNews AI, Neural Grounding">
+    <meta name="author" content="VeriNews AI Team">
+
+    <!-- OpenGraph Social Cards (Facebook, LinkedIn, WhatsApp) -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://verinews.ai">
+    <meta property="og:title" content="VeriNews AI | Enterprise AI Fact Verification">
+    <meta property="og:description" content="Cross-check news claims, articles, and viral stories against verified publishers with explainable AI summaries and grounding scores.">
+    <meta property="og:image" content="https://verinews.ai/assets/og-preview.png">
+    <meta property="og:site_name" content="VeriNews AI">
+
+    <!-- Twitter Card (Twitter / X) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:site" content="@verinews_ai">
+    <meta name="twitter:title" content="VeriNews AI | Enterprise AI Fact Verification">
+    <meta name="twitter:description" content="Instantly verify any news claim with real-time semantic search, source credibility scoring, and AI hallucination detection.">
+    <meta name="twitter:image" content="https://verinews.ai/assets/og-preview.png">
+
+    <title>VeriNews AI | Trusted AI Fact Verification</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+
+    <!-- External Libraries -->
+    <script defer src="https://unpkg.com/lucide@latest"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- Stylesheet with Cache Buster -->
+    <link rel="stylesheet" href="style.css?v=33.0">
+</head>
+
+<body class="dark">
+
+<!-- ========================================= -->
+<!-- Command Palette (Ctrl+K) -->
+<!-- ========================================= -->
+<div class="command-palette-overlay hidden" id="command-palette-overlay" aria-hidden="true" role="dialog" aria-label="Command Palette">
+    <div class="command-palette" id="command-palette">
+        <div class="command-palette-header">
+            <i data-lucide="search"></i>
+            <input type="text" id="command-input" placeholder="Type a command..." autocomplete="off" aria-label="Command search input">
+            <kbd>ESC</kbd>
+        </div>
+        <div class="command-palette-list" id="command-list" role="menu">
+            <button class="command-item" data-action="home" role="menuitem"><i data-lucide="home"></i> Navigate Home</button>
+            <button class="command-item" data-action="verify" role="menuitem"><i data-lucide="shield-check"></i> Verify News</button>
+            <button class="command-item" data-action="results" role="menuitem"><i data-lucide="bar-chart-3"></i> View Results</button>
+            <button class="command-item" data-action="theme" role="menuitem"><i data-lucide="moon"></i> Toggle Dark/Light Theme</button>
+            <button class="command-item" data-action="download" role="menuitem"><i data-lucide="download"></i> Download Report</button>
+            <button class="command-item" data-action="copy" role="menuitem"><i data-lucide="copy"></i> Copy Summary</button>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================= -->
+<!-- Slide-Over Source Deep-Dive Drawer -->
+<!-- ========================================= -->
+<div class="source-drawer-overlay hidden" id="source-drawer-overlay" aria-hidden="true" role="dialog" aria-label="Source Deep-Dive Drawer">
+    <div class="source-drawer" id="source-drawer">
+        <div class="drawer-header">
+            <div class="drawer-title-group">
+                <img id="drawer-favicon" src="" alt="Source Logo" class="drawer-favicon hidden">
+                <i id="drawer-icon" data-lucide="newspaper" class="drawer-icon"></i>
+                <div>
+                    <h3 id="drawer-domain">Source Domain</h3>
+                    <span id="drawer-subtitle" class="drawer-subtitle">Verified News Source</span>
+                </div>
+            </div>
+            <button id="close-drawer-btn" class="icon-btn" aria-label="Close Drawer">
+                <i data-lucide="x"></i>
+            </button>
+        </div>
+
+        <div class="drawer-body">
+            <h4 id="drawer-article-title" class="drawer-article-title">Article Title</h4>
+
+            <!-- Trust & Bias Rating Metrics -->
+            <div class="drawer-metrics-card">
+                <div class="drawer-metric-item">
+                    <span>Domain Credibility</span>
+                    <strong id="drawer-credibility">98%</strong>
+                </div>
+                <div class="drawer-metric-item">
+                    <span>Editorial Bias</span>
+                    <strong id="drawer-bias" class="drawer-bias-neutral">Neutral / Balanced</strong>
+                </div>
+                <div class="drawer-metric-item">
+                    <span>Verification Record</span>
+                    <strong id="drawer-ver-record" class="drawer-ver-record">High Trust Index</strong>
+                </div>
+            </div>
+
+            <!-- Badges Row -->
+            <div id="drawer-badges" class="source-badges-row"></div>
+
+            <!-- Scraped Article Text Snippet with Highlighted Keywords -->
+            <div class="drawer-content-box">
+                <h5><i data-lucide="file-text"></i> Article Content & Grounding Evidence:</h5>
+                <div id="drawer-content-text" class="drawer-text-body"></div>
+            </div>
+
+            <!-- External Article Link Button -->
+            <div class="drawer-action-row">
+                <a id="drawer-external-link" href="#" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-full-mobile">
+                    <i data-lucide="external-link"></i> Read Original Source Article
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll Progress Bar -->
+<div class="scroll-progress"></div>
+
+<!-- ========================================= -->
+<!-- Live Breaking Misinformation Watchdog Ticker -->
+<!-- ========================================= -->
+<div id="radar-ticker-container" class="radar-ticker-banner">
+    <div class="ticker-badge">
+        <span class="pulse-dot"></span>
+        <i data-lucide="radio"></i>
+        <strong>LIVE RADAR</strong>
+    </div>
+    <div class="ticker-marquee-wrapper">
+        <div id="radar-ticker-content" class="ticker-marquee">
+            <span class="ticker-item"><span class="badge-tag tag-false">DEBUNKED</span> Viral claim alleging 5G towers cause respiratory illness disproven by WHO</span>
+            <span class="ticker-item"><span class="badge-tag tag-false">HOAX</span> NASA 3-days-of-darkness viral rumor confirmed false</span>
+            <span class="ticker-item"><span class="badge-tag tag-true">VERIFIED</span> FDA approves CRISPR Casgevy gene therapy for sickle cell disease</span>
+        </div>
+    </div>
+</div>
+
+<!-- ========================================= -->
+<!-- Navigation Bar -->
+<!-- ========================================= -->
+<nav class="navbar glass">
+    <div class="nav-container">
+        <!-- Logo -->
+        <a href="#" class="logo" aria-label="VeriNews AI Home">
+            <i data-lucide="shield-check"></i>
+            <span>VeriNews AI</span>
+        </a>
+
+        <!-- Desktop Navigation Links with Active Indicators -->
+        <div class="nav-links">
+            <a href="#" class="active">Home</a>
+            <a href="#search-section">Verify News</a>
+            <a href="#dashboard">Results</a>
+            <a href="#analytics-section" id="nav-analytics-link">Analytics</a>
+            <a href="#benchmarks-section" id="nav-benchmarks-link">Benchmarks</a>
+            <a href="#" id="open-admin-btn" class="nav-admin-btn"><i data-lucide="settings" class="nav-admin-icon"></i> Admin</a>
+        </div>
+
+        <!-- Right Actions -->
+        <div class="nav-actions">
+            <button id="cmd-palette-btn" class="icon-btn" aria-label="Command Palette (Ctrl+K)" title="Command Palette (Ctrl+K)">
+                <i data-lucide="command"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"/></svg></i>
+            </button>
+            <button id="theme-toggle" class="icon-btn" aria-label="Toggle Theme" title="Toggle Theme">
+                <i data-lucide="sun"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg></i>
+            </button>
+            <button id="menu-toggle" class="icon-btn mobile-menu-btn" aria-label="Open Mobile Menu" title="Menu">
+                <i data-lucide="menu"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg></i>
+            </button>
+        </div>
+    </div>
+</nav>
+
+<!-- Mobile Drawer -->
+<div id="mobile-menu" class="mobile-menu hidden">
+    <a href="#">Home</a>
+    <a href="#search-section">Verify News</a>
+    <a href="#dashboard">Results</a>
+    <a href="#benchmarks-section">Benchmarks</a>
+    <a href="#recent-searches-section">History</a>
+</div>
+
+<!-- ========================================= -->
+<!-- 1. Hero Section (Compact & Minimal) -->
+<!-- ========================================= -->
+<header class="hero" id="hero-header">
+    <div class="hero-aurora"></div>
+    <div class="hero-glow"></div>
+    <canvas id="hero-particle-canvas" class="hero-particle-canvas"></canvas>
+
+    <div class="hero-content">
+        <div class="hero-badge">
+            <i data-lucide="sparkles"></i>
+            <span>AI Fact Verification</span>
+        </div>
+
+        <h1>
+            Verify News <span class="gradient-text">Instantly</span>
+        </h1>
+
+        <p class="hero-description">
+            Cross-check any claim, news story, or article URL against verified news sources and get evidence-based analysis.
+        </p>
+
+        <div class="hero-buttons">
+            <button id="hero-verify-btn" class="btn btn-primary btn-large btn-full-mobile" onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})">
+                <i data-lucide="shield-check"></i> Start Verification
+            </button>
+        </div>
+
+        <div class="hero-trust-pills">
+            <div class="trust-pill"><i data-lucide="check-circle-2"></i> Trusted Sources</div>
+            <div class="trust-pill"><i data-lucide="check-circle-2"></i> AI Fact Verification</div>
+            <div class="trust-pill"><i data-lucide="check-circle-2"></i> Evidence Based Results</div>
+        </div>
+    </div>
+
+    <!-- Scroll Down Hint Indicator -->
+    <div class="scroll-down-hint" onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})">
+        <span>Paste Claim Below</span>
+        <i data-lucide="chevron-down"></i>
+    </div>
+</header>
+
+<!-- ========================================= -->
+<!-- 2. Search Section (Trusted Sources Banner) -->
+<!-- ========================================= -->
+<section id="search-section" class="search-section">
+    <div class="search-card card scroll-reveal">
+        <div class="section-heading">
+            <h2>Paste News Claim</h2>
+            <div class="trusted-sources-banner">
+                <span>Verified Sources Index:</span>
+                <strong>Reuters • BBC • NASA • WHO • AP News</strong>
+            </div>
+        </div>
+
+        <!-- Mode Tabs -->
+        <div class="tabs" role="tablist">
+            <button class="tab active" role="tab" aria-selected="true" data-mode="claim">Claim</button>
+            <button class="tab" role="tab" aria-selected="false" data-mode="batch">Batch / Debate</button>
+            <button class="tab" role="tab" aria-selected="false" data-mode="url">URL</button>
+            <button class="tab" role="tab" aria-selected="false" data-mode="article">Article</button>
+            <button class="tab" role="tab" aria-selected="false" data-mode="image">Image / Meme</button>
+        </div>
+
+        <!-- Batch / Debate Quick Helpers (Shown when batch tab is active) -->
+        <div id="batch-helper-pills" class="batch-helper-pills hidden">
+            <span>Speech / Debate Helpers:</span>
+            <button type="button" class="btn-pill-example" id="load-debate-example-btn">
+                <i data-lucide="sparkles"></i> 2026 Energy Debate
+            </button>
+            <button type="button" class="btn-pill-example" id="load-health-batch-btn">
+                <i data-lucide="sparkles"></i> Biotech Policy Briefing
+            </button>
+            <label class="btn-pill-example btn-pill-upload" title="Upload speech transcript (.txt, .pdf)">
+                <i data-lucide="file-up"></i> Upload Transcript
+                <input type="file" id="batch-file-input" accept=".txt,.pdf" style="display: none;" />
+            </label>
+        </div>
+
+        <!-- Input Box for Text / URL / Article -->
+        <div id="text-input-container" class="search-box-container">
+            <textarea id="news-input" aria-label="Enter news claim, article, or URL" placeholder="e.g., NASA confirmed liquid water discovered on Mars..." maxlength="5000"></textarea>
+            
+            <div class="character-counter">
+                <span id="character-count">0 / 5000</span>
+            </div>
+
+            <!-- Live Instant Search Autocomplete Dropdown -->
+            <div id="autocomplete-dropdown" class="autocomplete-dropdown hidden">
+                <div class="autocomplete-header">
+                    <span><i data-lucide="sparkles"></i> Verified Matching Claims</span>
+                    <small>↑↓ to select, Enter to verify</small>
+                </div>
+                <div id="autocomplete-list" class="autocomplete-list"></div>
+            </div>
+        </div>
+
+        <!-- Real-Time URL Preview Card (revealed when URL is entered) -->
+        <div id="url-preview-card" class="url-preview-card hidden">
+            <div class="url-preview-icon-box">
+                <i data-lucide="globe" id="url-preview-icon"></i>
+                <img id="url-preview-favicon" src="" alt="Favicon" class="url-preview-favicon hidden" />
+            </div>
+            <div class="url-preview-info">
+                <div class="url-preview-domain-row">
+                    <strong id="url-preview-domain">news-outlet.com</strong>
+                    <span id="url-preview-trust-tag" class="trust-badge badge-high">Tier-1 Verified News</span>
+                </div>
+                <h5 id="url-preview-title">Detected News Article URL</h5>
+                <span id="url-preview-meta" class="url-preview-subtext">Click "Verify Now" to deep-scan full article veracity.</span>
+            </div>
+        </div>
+
+        <!-- Multimodal Drag & Drop Image Upload Container (Hidden by default) -->
+        <div id="image-upload-container" class="image-upload-card hidden">
+            <div id="image-dropzone" class="image-dropzone">
+                <i data-lucide="image-plus" class="dropzone-icon"></i>
+                <div class="dropzone-text">
+                    <h4>Drag & Drop News Screenshot, Meme, or Infographic</h4>
+                    <p>Supports PNG, JPG, JPEG, WEBP (Max 10MB) • Automatic OCR & ELA Forensics</p>
+                </div>
+                <label for="image-file-input" class="btn btn-secondary btn-sm">
+                    <i data-lucide="upload"></i> Browse Image File
+                </label>
+                <input type="file" id="image-file-input" accept="image/*" class="hidden" />
+            </div>
+
+            <!-- Image Preview Box -->
+            <div id="image-preview-wrapper" class="image-preview-wrapper hidden">
+                <div class="image-preview-card">
+                    <img id="image-preview-elem" src="" alt="Uploaded media preview" />
+                    <button id="remove-image-btn" class="icon-btn remove-img-btn" title="Remove image" aria-label="Remove image">
+                        <i data-lucide="x"></i>
+                    </button>
+                </div>
+                <div class="image-meta-info">
+                    <h5 id="image-filename">screenshot.png</h5>
+                    <div id="image-ocr-status" class="ocr-status-badge">
+                        <i data-lucide="scan-text"></i> <span>Extracting text via OCR...</span>
+                    </div>
+                    <div id="image-ocr-preview-text" class="ocr-preview-box"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Actions -->
+        <div class="search-actions">
+            <div class="shortcut-box">
+                <i data-lucide="keyboard"></i>
+                <span>Press <kbd>CTRL + ENTER</kbd> to verify</span>
+            </div>
+
+            <div class="btn-group">
+                <button id="clear-btn" class="btn btn-secondary">
+                    <i data-lucide="rotate-ccw"></i> Clear
+                </button>
+                <button id="verify-btn" class="btn btn-primary btn-full-mobile">
+                    <i data-lucide="shield-check"></i> Verify Now
+                </button>
+            </div>
+        </div>
+
+        <!-- Example Claims -->
+        <div class="example-section">
+            <span class="example-label">Try an Example Claim:</span>
+            <div class="example-claims">
+                <button class="chip">NASA confirmed liquid water discovered on Mars</button>
+                <button class="chip">WHO declared a new global health emergency</button>
+                <button class="chip">SpaceX successfully landed Starship on Mars</button>
+                <button class="chip">Apple acquired OpenAI in a surprise acquisition</button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- 3. Error State Card (No Results Found) -->
+<!-- ========================================= -->
+<section id="error-state" class="error-section hidden scroll-reveal">
+    <div class="error-card card">
+        <div class="error-icon-box">
+            <i data-lucide="alert-triangle"></i>
+        </div>
+        <h2>NO RESULTS FOUND</h2>
+        <p class="error-subtitle">We couldn't verify this claim with high confidence.</p>
+
+        <div class="error-grid">
+            <div class="error-box">
+                <h4>Possible Reasons:</h4>
+                <ul>
+                    <li>No trusted news sources found for this query.</li>
+                    <li>Claim is too short or ambiguous.</li>
+                    <li>Backend API is currently offline.</li>
+                    <li>Server timeout during source retrieval.</li>
+                </ul>
+            </div>
+
+            <div class="error-box">
+                <h4>Suggestions:</h4>
+                <ul>
+                    <li>Make your claim more specific.</li>
+                    <li>Paste a direct news article URL or full paragraph.</li>
+                    <li>Check key terms (e.g., NASA, WHO, SpaceX).</li>
+                    <li>Try again in a few seconds.</li>
+                </ul>
+            </div>
+        </div>
+
+        <button id="error-retry-btn" class="btn btn-primary" onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})">
+            <i data-lucide="rotate-ccw"></i> Try Another Query
+        </button>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- 4. Loading Section (7-Step Timeline + Shimmer Skeleton) -->
+<!-- ========================================= -->
+<section id="loading-state" class="loading-state hidden" aria-live="polite" aria-hidden="true">
+    <div class="loading-container">
+        <!-- Left: Live Verification Pipeline & Checklist -->
+        <div class="loading-card card">
+            <div class="loader-circle">
+                <div class="ai-orb">
+                    <div class="orb-ring orb-ring-1"></div>
+                    <div class="orb-ring orb-ring-2"></div>
+                    <div class="orb-ring orb-ring-3"></div>
+                    <div class="orb-core"></div>
+                </div>
+            </div>
+
+            <h2>Verifying Claim</h2>
+            <p id="loadingText" class="loading-message">Cross-checking sources...</p>
+
+            <div id="pipeline-card" class="pipeline-card">
+                <!-- Progress Bar -->
+                <div class="progress-wrapper">
+                    <div class="progress-bar">
+                        <div id="loading-progress" class="progress-fill"></div>
+                    </div>
+                    <span id="progress-percent">0%</span>
+                </div>
+
+                <!-- 7-Step Timeline Checklist -->
+                <div class="verification-timeline">
+                    <div class="timeline-item active">
+                        <i data-lucide="check"></i> <span>Claim Submitted</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Sources Retrieved</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Evidence Found</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Semantic Analysis</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Credibility Analysis</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Verdict Generated</span>
+                    </div>
+                    <div class="timeline-item">
+                        <i data-lucide="check"></i> <span>Report Completed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: High-Tech Shimmering Skeleton Preview -->
+        <div class="loading-skeleton-preview card">
+            <div class="skeleton-header-row">
+                <div class="skeleton-pill skeleton-shimmer"></div>
+                <div class="skeleton-id skeleton-shimmer"></div>
+            </div>
+            <div class="skeleton-meta-chips">
+                <div class="skeleton-chip skeleton-shimmer"></div>
+                <div class="skeleton-chip skeleton-shimmer"></div>
+                <div class="skeleton-chip skeleton-shimmer"></div>
+            </div>
+            <div class="skeleton-claim-box skeleton-shimmer"></div>
+            <div class="skeleton-stats-row">
+                <div class="skeleton-stat-box skeleton-shimmer"></div>
+                <div class="skeleton-gauge-box skeleton-shimmer"></div>
+                <div class="skeleton-stat-box skeleton-shimmer"></div>
+            </div>
+            <div class="skeleton-summary-card">
+                <div class="skeleton-line-title skeleton-shimmer"></div>
+                <div class="skeleton-line skeleton-shimmer"></div>
+                <div class="skeleton-line skeleton-shimmer"></div>
+                <div class="skeleton-line skeleton-short skeleton-shimmer"></div>
+            </div>
+            <div class="skeleton-cards-grid">
+                <div class="skeleton-source-card skeleton-shimmer"></div>
+                <div class="skeleton-source-card skeleton-shimmer"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- 5. Dashboard / AI Report Card -->
+<!-- ========================================= -->
+<section id="dashboard" class="dashboard hidden fade-in">
+    <!-- Dynamic Verdict Ambient Glow Backdrop -->
+    <div class="dashboard-ambient-glow" id="dashboard-ambient-glow"></div>
+
+    <!-- Streamlined Report Card -->
+    <div class="card intelligence-report-card scroll-reveal">
+        <div class="report-header-row">
+            <div class="report-title-badge">
+                <i data-lucide="file-check-2"></i>
+                <span>INTELLIGENCE REPORT</span>
+            </div>
+            
+            <div class="report-header-right-tools">
+                <!-- Instant Multi-Language Report Translator -->
+                <div class="report-lang-selector-wrap" title="Translate report language">
+                    <i data-lucide="languages" class="lang-icon"></i>
+                    <select id="report-lang-select" aria-label="Translate verification report">
+                        <option value="en" selected>🇬🇧 English (Original)</option>
+                        <option value="es">🇪🇸 Español (Spanish)</option>
+                        <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+                        <option value="fr">🇫🇷 Français (French)</option>
+                        <option value="de">🇩🇪 Deutsch (German)</option>
+                        <option value="ja">🇯🇵 日本語 (Japanese)</option>
+                        <option value="ar">🇸🇦 العربية (Arabic)</option>
+                    </select>
+                </div>
+                <button type="button" id="reverify-btn" class="btn-reverify-cache" title="Bypass cache and force fresh web verification">
+                    <i data-lucide="refresh-cw"></i>
+                    <span>Re-verify Live</span>
+                </button>
+                <button type="button" id="print-briefing-btn" class="btn-print-report" title="Print or save as intelligence briefing PDF">
+                    <i data-lucide="printer"></i>
+                    <span>Print Briefing</span>
+                </button>
+                <div id="report-id-display" class="report-id-text">#VN-2026-15421</div>
+            </div>
+        </div>
+
+        <!-- Metadata Summary Grid -->
+        <div class="report-meta-grid">
+            <!-- Entity & Event Pipeline -->
+            <div id="entity-extraction-bar" class="entity-extraction-bar">
+                <div class="entity-pill"><i data-lucide="user-check"></i> Subject: <strong id="entity-subject">General Subject</strong></div>
+                <div class="entity-pill"><i data-lucide="zap"></i> Event: <strong id="entity-event">General Event</strong></div>
+                <div class="entity-pill"><i data-lucide="calendar"></i> Timeframe: <strong id="entity-timeframe">Unspecified</strong></div>
+                <div class="entity-pill"><i data-lucide="globe"></i> Language: <strong id="entity-language">🇺🇸 English</strong></div>
+            </div>
+
+            <div class="meta-item">
+                <span class="meta-label">CLAIM</span>
+                <p id="user-claim-display" class="meta-value-claim">"Loading claim..."</p>
+            </div>
+
+            <div class="meta-item-row">
+                <div class="meta-subitem">
+                    <span class="meta-label">VERDICT</span>
+                    <div id="verdict-badge" class="verdict-badge verdict-true">SUPPORTED</div>
+                </div>
+
+                <div class="meta-subitem meta-subitem-confidence">
+                    <span class="meta-label">CONFIDENCE</span>
+                    <div class="confidence-flex-gauge">
+                        <div class="radial-gauge-wrapper">
+                            <svg class="radial-gauge-svg" viewBox="0 0 100 100" width="76" height="76">
+                                <defs>
+                                    <linearGradient id="gauge-grad-true" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#10b981" />
+                                        <stop offset="100%" stop-color="#06b6d4" />
+                                    </linearGradient>
+                                    <linearGradient id="gauge-grad-false" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#ef4444" />
+                                        <stop offset="100%" stop-color="#f97316" />
+                                    </linearGradient>
+                                    <linearGradient id="gauge-grad-mixed" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#f59e0b" />
+                                        <stop offset="100%" stop-color="#eab308" />
+                                    </linearGradient>
+                                    <linearGradient id="gauge-grad-unverified" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" stop-color="#64748b" />
+                                        <stop offset="100%" stop-color="#94a3b8" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="gauge-bg-circle" cx="50" cy="50" r="40" fill="none" stroke-width="8" />
+                                <circle id="gauge-fill-circle" class="gauge-fill-circle" cx="50" cy="50" r="40" fill="none" stroke-width="8" stroke-dasharray="251.327" stroke-dashoffset="251.327" stroke-linecap="round" />
+                            </svg>
+                            <div class="gauge-inner-label">
+                                <span id="confidenceText" class="confidence-num">0%</span>
+                            </div>
+                        </div>
+                        <div class="confidence-info-col">
+                            <span id="confidence-level-badge" class="confidence-level-tag">LOW CONFIDENCE</span>
+                            <span class="confidence-subtext">Calibrated Ensemble Score</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="meta-subitem">
+                    <span class="meta-label">GENERATED</span>
+                    <span id="report-date-display" class="meta-text">24 July 2026</span>
+                </div>
+
+                <div class="meta-subitem">
+                    <span class="meta-label">PROCESSING</span>
+                    <span id="processing-time" class="meta-text">1.7 seconds</span>
+                </div>
+
+                <div class="meta-subitem">
+                    <span class="meta-label">SOURCE DATA</span>
+                    <span id="cache-status-badge" class="cache-status-pill pill-live"><i data-lucide="zap"></i> Live Verified</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dedicated AI Executive Summary Card with Grounding & Hallucination Report -->
+        <div class="ai-summary-card">
+            <div class="ai-summary-header">
+                <div class="ai-summary-title">
+                    <i data-lucide="sparkles"></i>
+                    <h4>AI EXECUTIVE SUMMARY</h4>
+                </div>
+                <span class="live-stream-badge">LIVE VERIFIED</span>
+            </div>
+            <p id="ai-summary-text" class="ai-explanation-text">Verification completed via evidence alignment across top publishers.</p>
+            
+            <!-- Feature 2: AI Hallucination Report -->
+            <div id="hallucination-section" class="hallucination-box hidden">
+                <div class="hallucination-header">
+                    <span><i data-lucide="shield-alert"></i> Neural Grounding & Hallucination Risk:</span>
+                    <span id="hallucination-risk-badge" class="risk-badge risk-low">LOW RISK</span>
+                </div>
+                <div id="hallucination-sentences" class="sentence-grounding-list"></div>
+            </div>
+
+            <div class="why-sources-box">
+                <i data-lucide="shield-check"></i> Verified by top publishers: <strong id="why-sources-list">Reuters, BBC, NASA</strong>
+            </div>
+
+            <!-- Show Technical Details Button -->
+            <div class="tech-toggle-area">
+                <button id="toggle-tech-btn" class="btn btn-secondary btn-sm">
+                    <i data-lucide="sliders"></i> View Technical Details
+                </button>
+            </div>
+
+            <!-- Technical Breakdown Panel (Hidden by Default) -->
+            <div id="tech-details-panel" class="tech-details-panel hidden">
+                <h4>Advanced Neural Metrics:</h4>
+                <div class="metrics-grid">
+                    <div class="metric">
+                        <span>Semantic Similarity</span>
+                        <strong id="semantic-score">95%</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Source Credibility</span>
+                        <strong id="credibility-score">98%</strong>
+                    </div>
+                    <div class="metric">
+                        <span>Cross Encoder Score</span>
+                        <strong id="cross-score">94%</strong>
+                    </div>
+                </div>
+
+                <div class="tech-counts">
+                    <span>Articles Retrieved: <strong id="retrieved-articles">0</strong></span>
+                    <span>Trusted Sources Index: <strong id="trusted-sources">0</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sources: Dynamic Filter Toolbar with Search & Counts -->
+        <div class="sources-explorer-toolbar">
+            <div class="source-filters-row">
+                <div class="source-filter-chips" role="tablist">
+                    <button class="source-filter-chip active" data-filter="all" type="button">
+                        <span>All Sources</span>
+                        <span class="filter-count-badge" id="count-filter-all">0</span>
+                    </button>
+                    <button class="source-filter-chip" data-filter="tier1" type="button">
+                        <i data-lucide="landmark"></i>
+                        <span>Tier-1 News</span>
+                        <span class="filter-count-badge" id="count-filter-tier1">0</span>
+                    </button>
+                    <button class="source-filter-chip" data-filter="science" type="button">
+                        <i data-lucide="microscope"></i>
+                        <span>Scientific / Official</span>
+                        <span class="filter-count-badge" id="count-filter-science">0</span>
+                    </button>
+                    <button class="source-filter-chip" data-filter="supporting" type="button">
+                        <i data-lucide="check-circle-2"></i>
+                        <span>Supporting</span>
+                        <span class="filter-count-badge" id="count-filter-support">0</span>
+                    </button>
+                    <button class="source-filter-chip" data-filter="contradicting" type="button">
+                        <i data-lucide="x-circle"></i>
+                        <span>Contradicting</span>
+                        <span class="filter-count-badge" id="count-filter-contra">0</span>
+                    </button>
+                </div>
+
+                <div class="source-search-box">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="source-search-input" placeholder="Filter sources by publisher or keyword..." />
+                </div>
+            </div>
+
+            <div class="source-sort-toggle-wrap">
+                <span class="source-sort-label">Sort:</span>
+                <div class="source-sort-toggle" role="group" aria-label="Source sort mode">
+                    <button id="sort-by-relevance" class="source-sort-btn active" data-sort="relevance" type="button">Relevance</button>
+                    <button id="sort-by-credibility" class="source-sort-btn" data-sort="credibility" type="button">Credibility</button>
+                </div>
+            </div>
+        </div>
+        <div class="sources-two-col">
+            <div class="source-col source-col-support">
+                <div class="source-col-header">
+                    <i data-lucide="check-circle"></i>
+                    <h4>Supporting Sources</h4>
+                    <div class="slider-controls">
+                        <button class="slider-arrow" onclick="document.getElementById('supporting-list').scrollBy({left: -280, behavior: 'smooth'})" aria-label="Scroll left"><i data-lucide="chevron-left"></i></button>
+                        <button class="slider-arrow" onclick="document.getElementById('supporting-list').scrollBy({left: 280, behavior: 'smooth'})" aria-label="Scroll right"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="supporting-list" class="evidence-grid"></div>
+            </div>
+            <div class="source-col source-col-contra">
+                <div class="source-col-header">
+                    <i data-lucide="x-circle"></i>
+                    <h4>Contradicting Sources</h4>
+                    <div class="slider-controls">
+                        <button class="slider-arrow" onclick="document.getElementById('contradicting-list').scrollBy({left: -280, behavior: 'smooth'})" aria-label="Scroll left"><i data-lucide="chevron-left"></i></button>
+                        <button class="slider-arrow" onclick="document.getElementById('contradicting-list').scrollBy({left: 280, behavior: 'smooth'})" aria-label="Scroll right"><i data-lucide="chevron-right"></i></button>
+                    </div>
+                </div>
+                <div id="contradicting-list" class="evidence-grid"></div>
+            </div>
+        </div>
+
+        <!-- Feature: Multi-Claim Batch Verifier & Debate Scorecard -->
+        <div id="batch-scorecard-section" class="batch-scorecard-card hidden">
+            <div class="scorecard-header">
+                <div class="scorecard-title">
+                    <i data-lucide="layers"></i>
+                    <div>
+                        <h4>Multi-Claim & Debate Veracity Scorecard</h4>
+                        <p class="section-subtext">Composite decomposition & veracity index for multi-assertion speech/debate</p>
+                    </div>
+                </div>
+                <div class="scorecard-actions-group">
+                    <div class="scorecard-overall-badge">
+                        <div class="scorecard-gauge-circle" id="scorecard-veracity-gauge">78%</div>
+                        <div>
+                            <strong id="scorecard-veracity-verdict" class="text-success">HIGHLY FACTUAL SPEECH</strong>
+                            <span id="scorecard-veracity-subtitle">4 of 5 claims verified factual</span>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-secondary btn-sm" id="export-scorecard-csv-btn" title="Download debate scorecard as CSV spreadsheet">
+                        <i data-lucide="download"></i> Export CSV
+                    </button>
+                </div>
+            </div>
+
+            <!-- Aggregate Stat Pills -->
+            <div class="scorecard-metrics-grid">
+                <div class="sc-metric-pill">
+                    <span>Total Claims Parsed</span>
+                    <strong id="sc-total-claims">5</strong>
+                </div>
+                <div class="sc-metric-pill pill-true">
+                    <span>Supported / True</span>
+                    <strong id="sc-true-count">3</strong>
+                </div>
+                <div class="sc-metric-pill pill-mixed">
+                    <span>Mixed / Misleading</span>
+                    <strong id="sc-mixed-count">1</strong>
+                </div>
+                <div class="sc-metric-pill pill-false">
+                    <span>Refuted / False</span>
+                    <strong id="sc-false-count">1</strong>
+                </div>
+                <div class="sc-metric-pill">
+                    <span>Debate Credibility</span>
+                    <strong id="sc-speaker-rating">Grade A (High)</strong>
+                </div>
+            </div>
+
+            <!-- Interactive Claim-by-Claim Accordion Table -->
+            <div class="scorecard-table-wrapper">
+                <div class="scorecard-table-header">
+                    <span class="sc-col-num">#</span>
+                    <span class="sc-col-claim">Extracted Assertion Statement</span>
+                    <span class="sc-col-verdict">Verdict</span>
+                    <span class="sc-col-conf">Confidence</span>
+                    <span class="sc-col-src">Top Supporting/Refuting Source</span>
+                    <span class="sc-col-action">Details</span>
+                </div>
+                <div class="scorecard-table-body" id="scorecard-table-body">
+                    <!-- Populated dynamically with accordion drawers -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Feature: Full Article & URL Deep-Scan ("Truth Index") -->
+        <div id="article-deepscan-section" class="article-deepscan-card hidden">
+            <div class="deepscan-header">
+                <div class="deepscan-title">
+                    <i data-lucide="file-check"></i>
+                    <div>
+                        <h4 id="deepscan-article-title">Article Truth Index & Deep-Scan Breakdown</h4>
+                        <p id="deepscan-article-meta" class="section-subtext">Scanned via Atomic Claim Decomposition</p>
+                    </div>
+                </div>
+                <div class="deepscan-meter-badge">
+                    <div class="truth-gauge" id="deepscan-gauge-score">88%</div>
+                    <span id="deepscan-verdict-label" class="truth-label">HIGHLY FACTUAL</span>
+                </div>
+            </div>
+
+            <!-- Paragraph-by-Paragraph Breakdown -->
+            <div class="deepscan-paragraphs-container">
+                <h5><i data-lucide="list"></i> Paragraph-by-Paragraph Veracity Map:</h5>
+                <div id="deepscan-paragraphs-list" class="paragraphs-list"></div>
+            </div>
+        </div>
+
+        <!-- Feature 1: Similar Verified Claims Card -->
+        <div id="similar-claims-section" class="similar-claims-card hidden">
+            <div class="similar-header">
+                <i data-lucide="history"></i>
+                <h4>Similar Previously Verified Claims</h4>
+            </div>
+            <div id="similar-claims-list" class="similar-grid"></div>
+        </div>
+
+        <!-- Feature 6: Duplicate News Syndication Story Card -->
+        <div id="duplicate-news-section" class="duplicate-news-card hidden">
+            <div class="duplicate-header">
+                <i data-lucide="layers"></i>
+                <h4>Wire Service & Duplicate News Detection</h4>
+            </div>
+            <p id="duplicate-news-text" class="duplicate-desc">Detecting wire service syndications and republished news content.</p>
+            <div id="duplicate-groups-list" class="duplicate-grid"></div>
+        </div>
+
+        <!-- Feature 2: Interactive Evidence Neural Graph (Redesigned Force-Directed Cluster) -->
+        <div id="neural-graph-section" class="neural-graph-card">
+            <div class="neural-graph-header">
+                <div class="neural-graph-title">
+                    <div class="neural-icon-glow">
+                        <i data-lucide="network"></i>
+                    </div>
+                    <div>
+                        <h4>Interactive Evidence Neural Graph</h4>
+                        <p class="section-subtext">2D Force-Directed Synaptic Cluster • Real-time Evidence Alignment & Weight Dynamics</p>
+                    </div>
+                </div>
+
+                <div class="neural-header-actions">
+                    <!-- Quick Stance Consensus Meter -->
+                    <div class="neural-consensus-pill" id="neural-consensus-pill">
+                        <span class="nc-dot"></span>
+                        <span id="neural-consensus-text">Analyzing Synaptic Weights...</span>
+                    </div>
+
+                    <!-- Filter Mode Chips -->
+                    <div class="neural-filter-chips" role="group" aria-label="Filter graph nodes">
+                        <button type="button" class="neural-chip-btn active" data-graph-filter="all">All (<span id="graph-count-all">0</span>)</button>
+                        <button type="button" class="neural-chip-btn chip-support" data-graph-filter="SUPPORTING">Supporting (<span id="graph-count-support">0</span>)</button>
+                        <button type="button" class="neural-chip-btn chip-contra" data-graph-filter="CONTRADICTING">Contradicting (<span id="graph-count-contra">0</span>)</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="neural-graph-stage">
+                <canvas id="neural-graph-canvas" class="neural-graph-canvas"></canvas>
+
+                <!-- Floating Interactive HUD Telemetry Inspector -->
+                <div id="neural-hud-card" class="neural-hud-card">
+                    <div class="neural-hud-header">
+                        <div class="neural-hud-title-wrap">
+                            <span class="neural-hud-tag" id="hud-node-type">CLAIM HUB</span>
+                            <h5 id="hud-node-title">Verified News Assertion</h5>
+                        </div>
+                        <span class="hud-status-badge" id="hud-node-badge">Primary Node</span>
+                    </div>
+                    <p id="hud-node-desc" class="neural-hud-desc">Hover or drag any node to inspect evidence vectors and cross-encoder alignment.</p>
+                    
+                    <div class="neural-hud-metrics" id="hud-metrics-row">
+                        <div class="hud-metric">
+                            <span class="hud-metric-label">Alignment</span>
+                            <strong id="hud-metric-alignment" class="text-primary">100%</strong>
+                        </div>
+                        <div class="hud-metric">
+                            <span class="hud-metric-label">Credibility</span>
+                            <strong id="hud-metric-credibility" class="text-success">96%</strong>
+                        </div>
+                        <div class="hud-metric">
+                            <span class="hud-metric-label">Sources</span>
+                            <strong id="hud-metric-count">8 Nodes</strong>
+                        </div>
+                    </div>
+
+                    <div class="neural-hud-action" id="hud-action-row" style="display: none;">
+                        <button type="button" id="hud-inspect-btn" class="btn btn-primary btn-xs">
+                            <i data-lucide="external-link"></i> Inspect Source
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Floating Canvas Controls (Bottom-Right) -->
+                <div class="neural-stage-controls">
+                    <button type="button" id="neural-physics-toggle" class="stage-ctrl-btn" title="Pause / Float Physics Simulation">
+                        <i data-lucide="pause"></i>
+                    </button>
+                    <button type="button" id="neural-reset-btn" class="stage-ctrl-btn" title="Reset View & Stabilize Cluster">
+                        <i data-lucide="rotate-ccw"></i>
+                    </button>
+                    <button type="button" id="neural-zoom-in" class="stage-ctrl-btn" title="Zoom In">
+                        <i data-lucide="zoom-in"></i>
+                    </button>
+                    <button type="button" id="neural-zoom-out" class="stage-ctrl-btn" title="Zoom Out">
+                        <i data-lucide="zoom-out"></i>
+                    </button>
+                </div>
+
+                <!-- Subtle Bottom Hint -->
+                <div class="neural-canvas-hint">
+                    <i data-lucide="mouse-pointer-click"></i> Drag nodes to rearrange • Click to inspect • Scroll to zoom
+                </div>
+            </div>
+        </div>
+
+        <!-- Verification Reasoning: Horizontal Chip Row -->
+        <div class="reasoning-section-full">
+            <div class="reasoning-section-header">
+                <i data-lucide="brain"></i>
+                <h4>Verification Reasoning</h4>
+            </div>
+            <ul id="reasoning-list" class="reasoning-chip-list"></ul>
+        </div>
+
+        <!-- Extracted Evidence: Full Width Horizontal Scroll -->
+        <div class="evidence-full-section">
+            <div class="section-label-row">
+                <i data-lucide="sparkles"></i>
+                <h4>Extracted Evidence</h4>
+                <div class="slider-controls">
+                    <button class="slider-arrow" onclick="document.getElementById('key-evidence').scrollBy({left: -320, behavior: 'smooth'})" aria-label="Scroll left"><i data-lucide="chevron-left"></i></button>
+                    <button class="slider-arrow" onclick="document.getElementById('key-evidence').scrollBy({left: 320, behavior: 'smooth'})" aria-label="Scroll right"><i data-lucide="chevron-right"></i></button>
+                </div>
+            </div>
+            <div id="evidence-topic-chips" class="topic-chip-row"></div>
+            <div id="key-evidence" class="evidence-grid"></div>
+        </div>
+
+        <!-- Export & Actions Toolbar -->
+        <div class="export-buttons">
+            <button id="download-report" class="btn btn-primary btn-full-mobile">
+                <i data-lucide="download"></i> Download PDF Report
+            </button>
+            <button id="copy-summary" class="btn btn-secondary btn-full-mobile">
+                <i data-lucide="copy"></i> Copy AI Summary
+            </button>
+            <button id="share-card" class="btn btn-secondary btn-full-mobile">
+                <i data-lucide="share-2"></i> Share Fact Check Card
+            </button>
+            <button id="monitor-claim-btn" class="btn btn-secondary btn-full-mobile">
+                <i data-lucide="bell"></i> Monitor Claim
+            </button>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- 6. Recent Searches Section -->
+<!-- ========================================= -->
+<section id="recent-searches-section" class="recent-searches-section">
+    <div class="recent-searches-card card scroll-reveal">
+        <div class="recent-header">
+            <div>
+                <h2>Recent Verifications</h2>
+                <p>Access your previously verified claims.</p>
+            </div>
+            <button id="clear-recent-searches" class="btn btn-secondary btn-sm" type="button">
+                <i data-lucide="trash-2"></i> Clear History
+            </button>
+        </div>
+
+        <div id="recent-searches-container" class="recent-grid">
+            <!-- Inline Default Empty State Card -->
+            <div class="empty-state-card">
+                <div class="empty-state-icon">
+                    <i data-lucide="shield-question"></i>
+                </div>
+                <h3>NO VERIFICATIONS YET</h3>
+                <p>Paste a claim or URL above to begin AI verification.</p>
+                <button class="btn btn-primary btn-sm" onclick="document.getElementById('search-section').scrollIntoView({behavior:'smooth'})">
+                    <i data-lucide="shield-check"></i> VERIFY NOW
+                </button>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- Public Analytics Dashboard Section -->
+<!-- ========================================= -->
+<section id="analytics-section" class="analytics-public-section scroll-reveal">
+    <div class="card analytics-public-card">
+        <div class="analytics-header-row">
+            <div>
+                <span class="analytics-badge"><i data-lucide="bar-chart-2"></i> Real-Time Telemetry</span>
+                <h3>System Analytics & Misinformation Insights</h3>
+            </div>
+            <button id="refresh-analytics-btn" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw"></i> Refresh Data</button>
+        </div>
+
+        <div class="analytics-overview-grid">
+            <div class="analytics-stat-box">
+                <span class="stat-box-label">Total Verified Claims</span>
+                <strong id="analytics-total-claims" class="stat-box-num">18,752</strong>
+                <span class="stat-box-sub">Indexed across datasets</span>
+            </div>
+            <div class="analytics-stat-box">
+                <span class="stat-box-label">Verified True</span>
+                <strong id="analytics-true-claims" class="stat-box-num text-success">11,841</strong>
+                <span class="stat-box-sub">Supported by evidence</span>
+            </div>
+            <div class="analytics-stat-box">
+                <span class="stat-box-label">Debunked False</span>
+                <strong id="analytics-false-claims" class="stat-box-num text-danger">5,144</strong>
+                <span class="stat-box-sub">Contradicted & false</span>
+            </div>
+            <div class="analytics-stat-box">
+                <span class="stat-box-label">Misleading / Unverified</span>
+                <strong id="analytics-misleading-claims" class="stat-box-num text-warning">1,764</strong>
+                <span class="stat-box-sub">Partially accurate or unverified</span>
+            </div>
+        </div>
+
+        <!-- Trending Misinformation Feed -->
+        <div class="trending-misinformation-card">
+            <h4><i data-lucide="flame" class="icon-flame-error"></i> Trending Misinformation & Fact Checks</h4>
+            <div id="trending-claims-list" class="trending-claims-grid">
+                <div class="trending-claim-item">
+                    <span>"NASA confirmed liquid water discovered on Mars"</span>
+                    <span class="risk-badge risk-low">SUPPORTED (98%)</span>
+                </div>
+                <div class="trending-claim-item">
+                    <span>"Apple acquired OpenAI in a surprise $100B acquisition"</span>
+                    <span class="risk-badge risk-high">FALSE (95%)</span>
+                </div>
+                <div class="trending-claim-item">
+                    <span>"WHO declared a new global health emergency"</span>
+                    <span class="risk-badge risk-medium">PARTIALLY TRUE (76%)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ========================================= -->
+<!-- Admin Control Panel Modal -->
+<!-- ========================================= -->
+<div id="admin-modal-overlay" class="modal-overlay hidden" aria-hidden="true" role="dialog">
+    <div class="admin-modal-card">
+        <div class="admin-modal-header">
+            <div>
+                <div class="admin-modal-title"><i data-lucide="sliders"></i> Phase 2 Admin System Dashboard</div>
+                <span class="admin-subtitle">Live DB Stats, Embedding Metrics & Ensemble Weight Config</span>
+            </div>
+            <button id="close-admin-btn" class="icon-btn" aria-label="Close Admin Modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <div class="admin-grid">
+            <div class="admin-metric-card">
+                <span>Database File Size</span>
+                <strong id="admin-db-size">158.2 MB</strong>
+                <small>SQLite verinews_cache.db</small>
+            </div>
+            <div class="admin-metric-card">
+                <span>Vector Embeddings</span>
+                <strong id="admin-embedding-count">158,240</strong>
+                <small>all-MiniLM-L6-v2 384d</small>
+            </div>
+            <div class="admin-metric-card">
+                <span>Cache Hit Ratio</span>
+                <strong id="admin-cache-ratio">94.8%</strong>
+                <small>Sub-20ms short-circuit</small>
+            </div>
+            <div class="admin-metric-card">
+                <span>Avg Search Latency</span>
+                <strong id="admin-latency">14.2 ms</strong>
+                <small>Parallel Tavily + Vector</small>
+            </div>
+        </div>
+
+        <!-- Weight Adjuster Controls -->
+        <div class="admin-weight-adjuster">
+            <h4><i data-lucide="cpu"></i> Ensemble Weight Configuration</h4>
+            <div class="weight-control-row">
+                <label>DistilBERT Dataset Prediction (35% default)</label>
+                <input type="range" id="weight-dataset" min="0" max="100" value="35">
+                <span id="val-weight-dataset">35%</span>
+            </div>
+            <div class="weight-control-row">
+                <label>Cross-Encoder Neural Rerank (30% default)</label>
+                <input type="range" id="weight-cross" min="0" max="100" value="30">
+                <span id="val-weight-cross">30%</span>
+            </div>
+            <div class="weight-control-row">
+                <label>Source Credibility Index (20% default)</label>
+                <input type="range" id="weight-cred" min="0" max="100" value="20">
+                <span id="val-weight-cred">20%</span>
+            </div>
+            <div class="weight-control-row">
+                <label>Semantic Vector Similarity (15% default)</label>
+                <input type="range" id="weight-sim" min="0" max="100" value="15">
+                <span id="val-weight-sim">15%</span>
+            </div>
+
+            <div class="admin-actions">
+                <button id="save-config-btn" class="btn btn-primary btn-sm"><i data-lucide="save"></i> Save Configuration</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Scroll To Top Button -->
+<button id="scroll-top" class="scroll-top-btn" aria-label="Scroll to top" title="Scroll to top">
+    <i data-lucide="arrow-up"></i>
+</button>
+
+<!-- ========================================= -->
+<!-- 7. Professional Centered + 4-Column Footer -->
+<!-- ========================================= -->
+<footer id="footer" class="footer">
+    <div class="footer-container scroll-reveal">
+        <!-- Top Centered Branding -->
+        <div class="footer-header-center">
+            <div class="footer-logo">
+                <i data-lucide="shield-check"></i>
+                <span>VeriNews AI</span>
+            </div>
+            <p class="footer-tagline">Trusted AI Fact Verification Platform</p>
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <!-- 4-Column Grid Layout -->
+        <div class="footer-columns-grid">
+            <div class="footer-column">
+                <h4>Navigation</h4>
+                <a href="#">Home</a>
+                <a href="#search-section">Verify News</a>
+                <a href="#dashboard">Results</a>
+                <a href="#recent-searches-section">History</a>
+            </div>
+
+            <div class="footer-column">
+                <h4>Resources & API</h4>
+                <a href="http://127.0.0.1:8000/docs" target="_blank" rel="noopener noreferrer">Swagger API Docs ↗</a>
+                <a href="http://127.0.0.1:8000/redoc" target="_blank" rel="noopener noreferrer">ReDoc Documentation ↗</a>
+                <a href="http://127.0.0.1:8000/health" target="_blank" rel="noopener noreferrer">API Health Check ↗</a>
+                <a href="#">GitHub Repo</a>
+            </div>
+
+            <div class="footer-column">
+                <h4>System Status</h4>
+                <div class="footer-status-row"><span>AI Engine</span> <strong class="text-success">Online</strong></div>
+                <div class="footer-status-row"><span>Search API</span> <strong class="text-success">Online</strong></div>
+                <div class="footer-status-row"><span>Verification</span> <strong class="text-success">Online</strong></div>
+                <div class="footer-status-row"><span>Summarization</span> <strong class="text-success">Online</strong></div>
+            </div>
+
+            <div class="footer-column">
+                <h4>Legal</h4>
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Security</a>
+            </div>
+        </div>
+
+        <div class="footer-divider"></div>
+
+        <div class="copyright">
+            <p>&copy; 2026 VeriNews AI • Powered by Explainable AI</p>
+        </div>
+    </div>
+</footer>
+
+<!-- ========================================= -->
+<!-- Share Fact-Check Card Modal -->
+<!-- ========================================= -->
+<div id="share-card-modal-overlay" class="modal-overlay hidden" aria-hidden="true" role="dialog">
+    <div class="share-modal-card">
+        <div class="modal-header">
+            <div>
+                <div class="modal-title"><i data-lucide="share-2"></i> Share Fact-Check Card</div>
+                <span class="modal-subtitle">Export branded high-resolution card for social media and messaging</span>
+            </div>
+            <button id="close-share-modal-btn" class="icon-btn" aria-label="Close Share Modal"><i data-lucide="x"></i></button>
+        </div>
+
+        <!-- Format Selector -->
+        <div class="card-format-selector">
+            <button class="format-btn active" id="format-btn-landscape" data-format="landscape">
+                <i data-lucide="layout"></i> Landscape (Twitter / LinkedIn / 1200×630)
+            </button>
+            <button class="format-btn" id="format-btn-square" data-format="square">
+                <i data-lucide="square"></i> Square (Instagram / WhatsApp / 1080×1080)
+            </button>
+        </div>
+
+        <!-- Live Visual Card Preview Container -->
+        <div class="share-card-preview-wrapper" id="share-card-preview-wrapper">
+            <div id="shareable-card-element" class="shareable-card format-landscape">
+                <div class="sc-header">
+                    <div class="sc-brand">
+                        <div class="sc-logo-icon">🛡️</div>
+                        <div>
+                            <div class="sc-brand-name">VeriNews AI</div>
+                            <div class="sc-brand-tag">FACT VERIFICATION REPORT</div>
+                        </div>
+                    </div>
+                    <div id="sc-verdict-badge" class="sc-verdict-badge verdict-true">SUPPORTED</div>
+                </div>
+
+                <div class="sc-claim-box">
+                    <span class="sc-label">VERIFIED CLAIM</span>
+                    <p id="sc-claim-text">"Loading claim..."</p>
+                </div>
+
+                <div class="sc-metrics-row">
+                    <div class="sc-metric-box">
+                        <span class="sc-sublabel">CONFIDENCE SCORE</span>
+                        <strong id="sc-confidence-score" class="text-success">98%</strong>
+                        <span id="sc-confidence-rating" class="sc-rating-text">High Confidence</span>
+                    </div>
+                    <div class="sc-metric-box">
+                        <span class="sc-sublabel">VERIFIED BY</span>
+                        <strong id="sc-sources-text" class="text-info">Reuters, BBC, NASA</strong>
+                        <span class="sc-rating-text">Independent Publishers</span>
+                    </div>
+                </div>
+
+                <div class="sc-summary-box">
+                    <i data-lucide="sparkles"></i>
+                    <p id="sc-summary-text">Verification completed via multi-factor evidence analysis.</p>
+                </div>
+
+                <div class="sc-footer">
+                    <span id="sc-date-text">Verified on Jul 24, 2026</span>
+                    <strong class="sc-footer-brand">verinews.ai • Explainable AI Fact Engine</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Actions -->
+        <div class="share-modal-actions">
+            <div class="share-action-buttons">
+                <button id="download-png-btn" class="btn btn-primary">
+                    <i data-lucide="download"></i> Download PNG Image
+                </button>
+                <button id="copy-card-img-btn" class="btn btn-secondary">
+                    <i data-lucide="copy"></i> Copy Image to Clipboard
+                </button>
+            </div>
+
+            <!-- Social Share Quick Links -->
+            <div class="social-share-row">
+                <span>Share To:</span>
+                <a id="share-twitter-btn" href="#" target="_blank" rel="noopener noreferrer" class="social-icon-btn" title="Share on Twitter / X">
+                    <i data-lucide="twitter"></i>
+                </a>
+                <a id="share-whatsapp-btn" href="#" target="_blank" rel="noopener noreferrer" class="social-icon-btn" title="Share on WhatsApp">
+                    <i data-lucide="message-circle"></i>
+                </a>
+                <a id="share-linkedin-btn" href="#" target="_blank" rel="noopener noreferrer" class="social-icon-btn" title="Share on LinkedIn">
+                    <i data-lucide="linkedin"></i>
+                </a>
+                <button id="share-copy-text-btn" class="social-icon-btn" title="Copy Text Summary">
+                    <i data-lucide="clipboard"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="aria-announcer" class="sr-only" aria-live="polite"></div>
+
+<!-- ========================================= -->
+<!-- Mobile Bottom Navigation Bar -->
+<!-- ========================================= -->
+<nav id="mobile-bottom-nav" class="mobile-bottom-nav" aria-label="Mobile Navigation">
+    <a href="#search-section" class="mobile-nav-item active" data-target="search-section" aria-label="Verify Claim">
+        <i data-lucide="shield-check"></i>
+        <span>Verify</span>
+    </a>
+    <a href="#dashboard" class="mobile-nav-item" data-target="dashboard" aria-label="Results">
+        <i data-lucide="bar-chart-3"></i>
+        <span>Results</span>
+    </a>
+    <a href="#neural-graph-section" class="mobile-nav-item" data-target="neural-graph-section" aria-label="Neural Graph">
+        <i data-lucide="network"></i>
+        <span>Graph</span>
+    </a>
+    <a href="#recent-searches-section" class="mobile-nav-item" data-target="recent-searches-section" aria-label="Verification History">
+        <i data-lucide="history"></i>
+        <span>History</span>
+    </a>
+</nav>
+
+<!-- Controller Script with Cache Buster -->
+
+<!-- ========================================= -->
+<!-- Offline Mode Banner -->
+<!-- ========================================= -->
+<div id="offline-mode-banner" class="offline-banner hidden">
+    <span class="offline-dot"></span>
+    <i data-lucide="wifi-off"></i>
+    <strong>Offline Mode Active</strong>
+    <span>— Verified locally using Phi-3-mini AI model</span>
+    <button class="offline-dismiss-btn" onclick="this.parentElement.classList.add('hidden')" aria-label="Dismiss"><i data-lucide="x"></i></button>
+</div>
+
+<!-- ========================================= -->
+<!-- Benchmarks & A/B Testing Engine Section -->
+<!-- ========================================= -->
+<section id="benchmarks-section" class="benchmarks-section scroll-reveal">
+    <div class="benchmarks-header">
+        <div class="benchmarks-title-row">
+            <div class="benchmarks-icon-wrap"><i data-lucide="flask-conical"></i></div>
+            <div>
+                <h2>Accuracy Benchmarking Engine</h2>
+                <p class="section-subtext">Test verifier precision, recall & F1 against LIAR, FEVER, and PolitiFact labeled datasets</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dataset Selector Cards -->
+    <div class="benchmark-dataset-grid">
+        <label class="benchmark-dataset-card active" data-dataset="liar">
+            <input type="radio" name="bench-dataset" value="liar" checked hidden />
+            <div class="bdc-icon"><i data-lucide="file-text"></i></div>
+            <div class="bdc-info">
+                <strong>LIAR Dataset</strong>
+                <span>Political Statements · 12K claims · 3-class</span>
+            </div>
+            <div class="bdc-check"><i data-lucide="check-circle"></i></div>
+        </label>
+        <label class="benchmark-dataset-card" data-dataset="fever">
+            <input type="radio" name="bench-dataset" value="fever" hidden />
+            <div class="bdc-icon"><i data-lucide="book-open"></i></div>
+            <div class="bdc-info">
+                <strong>FEVER Dataset</strong>
+                <span>Wikipedia-grounded · 185K claims · 2-class</span>
+            </div>
+            <div class="bdc-check"><i data-lucide="check-circle"></i></div>
+        </label>
+        <label class="benchmark-dataset-card" data-dataset="politifact">
+            <input type="radio" name="bench-dataset" value="politifact" hidden />
+            <div class="bdc-icon"><i data-lucide="landmark"></i></div>
+            <div class="bdc-info">
+                <strong>PolitiFact</strong>
+                <span>Professional Journalist Rulings · Political</span>
+            </div>
+            <div class="bdc-check"><i data-lucide="check-circle"></i></div>
+        </label>
+    </div>
+
+    <!-- Config Row -->
+    <div class="benchmark-config-row">
+        <div class="bench-config-item">
+            <label for="bench-sample-slider">Sample Size: <strong id="bench-sample-count">50</strong> claims</label>
+            <input type="range" id="bench-sample-slider" min="10" max="100" value="50" step="10" class="bench-slider" />
+        </div>
+        <div class="bench-config-item">
+            <label>Verifier Mode:</label>
+            <div class="bench-mode-pills">
+                <button class="bench-mode-pill active" data-mode="fast">⚡ Fast</button>
+                <button class="bench-mode-pill" data-mode="hybrid">🔬 Hybrid</button>
+                <button class="bench-mode-pill" data-mode="local">🧠 Local AI</button>
+            </div>
+        </div>
+        <button id="run-benchmark-btn" class="btn btn-primary bench-run-btn">
+            <i data-lucide="play"></i> Run Benchmark
+        </button>
+    </div>
+
+    <!-- Progress Bar (hidden by default) -->
+    <div id="bench-progress-wrap" class="bench-progress-wrap hidden">
+        <div class="bench-progress-label">Running benchmark... <span id="bench-progress-text">Initializing...</span></div>
+        <div class="bench-progress-bar-track"><div id="bench-progress-bar" class="bench-progress-bar"></div></div>
+    </div>
+
+    <!-- Results Panel (hidden until run) -->
+    <div id="benchmark-results-panel" class="benchmark-results-panel hidden">
+        <!-- Top Metrics Row -->
+        <div class="bench-top-metrics">
+            <div class="bench-metric-hero">
+                <div class="bench-accuracy-ring" id="bench-accuracy-ring">
+                    <span id="bench-accuracy-pct">—</span>
+                    <small>Accuracy</small>
+                </div>
+            </div>
+            <div class="bench-metric-cards">
+                <div class="bench-kpi-card">
+                    <span class="bench-kpi-label">Macro F1</span>
+                    <span class="bench-kpi-val" id="bench-macro-f1">—</span>
+                </div>
+                <div class="bench-kpi-card">
+                    <span class="bench-kpi-label">Samples</span>
+                    <span class="bench-kpi-val" id="bench-n-samples">—</span>
+                </div>
+                <div class="bench-kpi-card">
+                    <span class="bench-kpi-label">Avg Latency</span>
+                    <span class="bench-kpi-val" id="bench-avg-latency">—</span>
+                </div>
+                <div class="bench-kpi-card">
+                    <span class="bench-kpi-label">P95 Latency</span>
+                    <span class="bench-kpi-val" id="bench-p95-latency">—</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Per-Class Metrics -->
+        <div class="bench-class-grid">
+            <div class="bench-class-card bench-class-true">
+                <h5>✅ TRUE</h5>
+                <div class="bench-class-metrics">
+                    <div><span>Precision</span><strong id="bench-true-prec">—</strong></div>
+                    <div><span>Recall</span><strong id="bench-true-rec">—</strong></div>
+                    <div><span>F1</span><strong id="bench-true-f1">—</strong></div>
+                </div>
+            </div>
+            <div class="bench-class-card bench-class-mixed">
+                <h5>⚠️ MISLEADING</h5>
+                <div class="bench-class-metrics">
+                    <div><span>Precision</span><strong id="bench-mixed-prec">—</strong></div>
+                    <div><span>Recall</span><strong id="bench-mixed-rec">—</strong></div>
+                    <div><span>F1</span><strong id="bench-mixed-f1">—</strong></div>
+                </div>
+            </div>
+            <div class="bench-class-card bench-class-false">
+                <h5>❌ FALSE</h5>
+                <div class="bench-class-metrics">
+                    <div><span>Precision</span><strong id="bench-false-prec">—</strong></div>
+                    <div><span>Recall</span><strong id="bench-false-rec">—</strong></div>
+                    <div><span>F1</span><strong id="bench-false-f1">—</strong></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Confusion Matrix -->
+        <div class="bench-confusion-wrap">
+            <h4><i data-lucide="grid-3x3"></i> Confusion Matrix</h4>
+            <div id="bench-confusion-matrix" class="bench-confusion-grid"></div>
+        </div>
+
+        <!-- Sample Results Table -->
+        <div class="bench-samples-wrap">
+            <h4><i data-lucide="list"></i> Sample Predictions <small>(first 20)</small></h4>
+            <div class="bench-table-wrap">
+                <table class="bench-samples-table">
+                    <thead><tr><th>#</th><th>Claim</th><th>True Label</th><th>Predicted</th><th>Correct</th><th>Latency</th></tr></thead>
+                    <tbody id="bench-samples-tbody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Run History -->
+        <div class="bench-history-wrap">
+            <h4><i data-lucide="history"></i> Benchmark History</h4>
+            <div id="bench-history-list" class="bench-history-list"></div>
+        </div>
+    </div>
+</section>
+
+<script src="script.js?v=33.0"></script>
+
+</body>
+</html>

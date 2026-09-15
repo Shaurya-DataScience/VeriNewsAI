@@ -1,0 +1,46 @@
+# Python & Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+
+# Databases & Cache
+*.db
+*.sqlite
+*.sqlite3
+backend/*.db
+backend/data/*.db
+
+# Environment Variables & Secrets
+.env
+backend/.env
+*.env
+
+# Machine Learning Models & Large Datasets
+backend/models/distilbert_factchecker/
+*.joblib
+*.pt
+*.bin
+*.h5
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Node & Build Artifacts
+node_modules/
+dist/
+*.bak
+
+# IDE & System Files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+

@@ -1,0 +1,342 @@
+[
+  {
+    "id": "ds_001",
+    "claim": "NASA discovered liquid water flowing on Mars",
+    "verdict": "TRUE",
+    "confidence": 96,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Confirmed. NASA's Mars Reconnaissance Orbiter (MRO) provided strong evidence of liquid water flows (recurring slope lineae) on Mars during warm seasons, confirmed by spectroscopic data showing hydrated salts.",
+    "reasoning": [
+      "Confirmed by NASA MRO Compact Reconnaissance Imaging Spectrometer (CRISM).",
+      "Hydrated salts (perchlorates) lower the freezing point of water allowing liquid brines to flow.",
+      "Verified by peer-reviewed studies published in Nature Geoscience."
+    ],
+    "supporting_sources": [
+      { "title": "NASA Confirms Evidence of Liquid Water on Today's Mars", "domain": "nasa.gov", "credibility": 98, "url": "https://www.nasa.gov/press-release/nasa-confirms-evidence-that-liquid-water-flows-on-today-s-mars" },
+      { "title": "Spectral Evidence for Hydrated Salts in Recurrent Slope Lineae on Mars", "domain": "nature.com", "credibility": 96, "url": "https://www.nature.com/articles/ngeo2546" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 96.5, "cross_encoder": 95.0, "source_credibility": 98.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 90.0, "final_confidence": 96 }
+  },
+  {
+    "id": "ds_002",
+    "claim": "Elon Musk bought Coca-Cola to put cocaine back in it",
+    "verdict": "FALSE",
+    "confidence": 98,
+    "claim_type": "GENERAL",
+    "summary": "False. This claim originated from a satirical tweet posted by Elon Musk on April 27, 2022. Musk did not purchase Coca-Cola Co., and the tweet was purely a joke.",
+    "reasoning": [
+      "Elon Musk posted a viral satirical tweet: 'Next I'm buying Coca-Cola to put the cocaine back in'.",
+      "No acquisition offer or financial transaction was submitted to Coca-Cola Co.",
+      "Confirmed as satire by Reuters, AP News, and FactCheck.org."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "Fact Check: Elon Musk did NOT buy Coca-Cola", "domain": "reuters.com", "credibility": 95, "url": "https://www.reuters.com/article/factcheck-coca-cola-musk-idUSL2N2WJ23X" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.0, "source_credibility": 95.0, "date_verification": 100.0, "evidence_consistency": 98.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 95.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_003",
+    "claim": "COVID-19 vaccines contain metallic microchips for 5G tracking",
+    "verdict": "FALSE",
+    "confidence": 99,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. COVID-19 vaccines contain mRNA, lipids, salts, and sugars. They do not contain microchips, electronics, or trackable metals.",
+    "reasoning": [
+      "Ingredient lists published by FDA, WHO, and CDC confirm zero metallic microchips or tracking devices.",
+      "Microchips capable of transmitting cellular data are far too large to fit through a standard 22-gauge vaccine needle.",
+      "Debunked across thousands of independent laboratory inspections and health agency reviews."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "FDA COVID-19 Vaccine Ingredients & Fact Sheet", "domain": "fda.gov", "credibility": 99, "url": "https://www.fda.gov/emergency-preparedness-and-response/coronavirus-disease-2019-covid-19/covid-19-vaccines" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 98.5, "source_credibility": 99.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 98.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_004",
+    "claim": "Earth is flat and NASA hides the edge",
+    "verdict": "FALSE",
+    "confidence": 99,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. Earth is an oblate spheroid. Overwhelming empirical evidence—including satellite imagery, circumnavigation, lunar eclipses, and gravity measurements—proves Earth is spherical.",
+    "reasoning": [
+      "Millions of high-resolution photographs from international space agencies confirm Earth's spherical curvature.",
+      "The shadow of Earth cast on the Moon during a lunar eclipse is always circular."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "NASA: How Do We Know Earth Is Round?", "domain": "nasa.gov", "credibility": 99, "url": "https://www.nasa.gov/audience/forstudents/5-8/features/nasa-knows/what-is-earth-58.html" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 99.0, "source_credibility": 99.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 99.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_005",
+    "claim": "OpenAI launched GPT-4 with multimodal vision and reasoning capabilities",
+    "verdict": "TRUE",
+    "confidence": 97,
+    "claim_type": "GENERAL",
+    "summary": "Verified. OpenAI officially released GPT-4 in March 2023, introducing multimodal capabilities accepting both image and text inputs.",
+    "reasoning": [
+      "OpenAI published the GPT-4 System Card and technical report on March 14, 2023.",
+      "GPT-4 passed simulated bar exams, USABO biology Olympiads, and AP exams in top 10th percentile."
+    ],
+    "supporting_sources": [
+      { "title": "OpenAI GPT-4 Research Announcement", "domain": "openai.com", "credibility": 96, "url": "https://openai.com/research/gpt-4" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 97.0, "cross_encoder": 96.5, "source_credibility": 96.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 92.0, "final_confidence": 97 }
+  },
+  {
+    "id": "ds_006",
+    "claim": "Apple released Vision Pro spatial computing headset",
+    "verdict": "TRUE",
+    "confidence": 98,
+    "claim_type": "GENERAL",
+    "summary": "Verified. Apple unveiled the Vision Pro spatial computer at WWDC 2023 and officially released it in the US in February 2024 featuring visionOS.",
+    "reasoning": [
+      "Apple Newsroom officially announced Vision Pro availability in US Apple Stores on February 2, 2024.",
+      "Features micro-OLED displays, M2 and R1 dual-chip architecture, and eye-tracking navigation."
+    ],
+    "supporting_sources": [
+      { "title": "Apple Vision Pro Available in US Apple Stores", "domain": "apple.com", "credibility": 98, "url": "https://www.apple.com/newsroom/2024/02/apple-vision-pro-is-available-starting-today/" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.0, "source_credibility": 98.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 95.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_007",
+    "claim": "Total Bitcoin maximum supply is capped at 21 million coins",
+    "verdict": "TRUE",
+    "confidence": 99,
+    "claim_type": "GENERAL",
+    "summary": "Verified. The Bitcoin protocol source code mathematically limits total supply to 21 million BTC via hardcoded block reward halving schedules every 210,000 blocks.",
+    "reasoning": [
+      "Hardcoded parameter in Satoshi Nakamoto's original Bitcoin whitepaper and C++ core code.",
+      "Halving events reduce block reward every 4 years until final fraction is mined around year 2140."
+    ],
+    "supporting_sources": [
+      { "title": "Bitcoin Developer Documentation: Supply Cap Mechanics", "domain": "bitcoin.org", "credibility": 97, "url": "https://bitcoin.org/en/developer-guide" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 98.5, "source_credibility": 97.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 96.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_008",
+    "claim": "Eating carrots gives humans night vision super powers",
+    "verdict": "FALSE",
+    "confidence": 95,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "False. While carrots contain Beta-Carotene (Vitamin A) which supports normal eye health, eating excess carrots does not give humans night-vision capabilities. This myth originated as British WWII military propaganda to conceal radar technology.",
+    "reasoning": [
+      "British Ministry of Information spread propaganda during WWII claiming RAF pilots ate carrots to hide airborne interception radar secrets.",
+      "Ophthalmologists confirm Vitamin A prevents night blindness but does not enhance vision beyond normal human limits."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "Smithsonian Magazine: A WWII Propaganda Myth About Carrots and Vision", "domain": "smithsonianmag.com", "credibility": 96, "url": "https://www.smithsonianmag.com/arts-culture/a-wwii-propaganda-myth-carried-a-carrot-134169722/" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 95.0, "cross_encoder": 94.0, "source_credibility": 96.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 90.0, "final_confidence": 95 }
+  },
+  {
+    "id": "ds_009",
+    "claim": "Microwaves cause dangerous radioactive contamination in food",
+    "verdict": "FALSE",
+    "confidence": 98,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. Microwave ovens use non-ionizing radio frequency radiation (2.45 GHz) that excites water molecules to produce thermal heat. They do not alter atomic structure or leave radioactive residues.",
+    "reasoning": [
+      "WHO and FDA confirm microwave radiation is non-ionizing and lacks photon energy to ionize atoms or cause radioactivity.",
+      "Microwave radiation stops completely as soon as the magnetron turns off."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "FDA Microwave Oven Radiation Safety Facts", "domain": "fda.gov", "credibility": 99, "url": "https://www.fda.gov/radiation-emitting-products/resources-you-radiation-emitting-products/microwave-ovens" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.5, "source_credibility": 99.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 96.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_010",
+    "claim": "Wi-Fi wireless routers give humans brain cancer",
+    "verdict": "FALSE",
+    "confidence": 98,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. Wi-Fi uses low-power non-ionizing radiofrequency fields. Decades of epidemiological studies and WHO reports show no evidence connecting Wi-Fi exposure to brain cancer.",
+    "reasoning": [
+      "Wi-Fi operates at non-ionizing frequencies (2.4 GHz and 5 GHz) far weaker than sunlight or visible light.",
+      "International Commission on Non-Ionizing Radiation Protection (ICNIRP) guidelines confirm Wi-Fi radiation levels are orders of magnitude below safe exposure limits."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "WHO Electromagnetic Fields and Public Health: Wireless Technologies", "domain": "who.int", "credibility": 98, "url": "https://www.who.int/news-room/questions-and-answers/item/electromagnetic-fields-and-public-health-mobile-phones" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.0, "source_credibility": 98.0, "date_verification": 100.0, "evidence_consistency": 100.0, "trusted_source_ratio": 100.0, "duplicate_agreement": 95.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_011",
+    "claim": "Global sea levels have risen by over 20 centimeters since 1880",
+    "verdict": "TRUE",
+    "confidence": 97,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Verified. Global mean sea level has risen by approximately 21 to 24 centimeters (8 to 9 inches) since 1880 based on tide gauge and satellite measurements.",
+    "reasoning": [
+      "Confirmed by NASA Sea Level Change portal and NOAA ocean monitoring data.",
+      "Thermal expansion of warming oceans and melting glaciers contribute to steady sea level rise."
+    ],
+    "supporting_sources": [
+      { "title": "NOAA Climate Change: Global Sea Level", "domain": "climate.gov", "credibility": 98, "url": "https://www.climate.gov/news-features/understanding-climate/climate-change-global-sea-level" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 97.0, "cross_encoder": 96.0, "source_credibility": 98.0, "final_confidence": 97 }
+  },
+  {
+    "id": "ds_012",
+    "claim": "CRISPR gene editing was used to treat sickle cell disease",
+    "verdict": "TRUE",
+    "confidence": 98,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Verified. In December 2023, the US FDA approved Casgevy, the first CRISPR-based gene editing therapy to treat sickle cell disease in patients aged 12 and older.",
+    "reasoning": [
+      "FDA official press release approved Vertex and CRISPR Therapeutics exagamglogene autotemcel (Casgevy).",
+      "Clinical trials demonstrated elimination of severe vaso-occlusive crises."
+    ],
+    "supporting_sources": [
+      { "title": "FDA Approves First Gene Therapies to Treat Sickle Cell Disease", "domain": "fda.gov", "credibility": 99, "url": "https://www.fda.gov/news-events/press-announcements/fda-approves-first-gene-therapies-treat-sickle-cell-disease" }
+    ],
+    "contradicting_sources": [],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.0, "source_credibility": 99.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_013",
+    "claim": "5G networks broadcast radiation that causes viral outbreaks",
+    "verdict": "FALSE",
+    "confidence": 99,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. Viruses are biological entities (genetic code in protein shells) that cannot be transmitted or generated by radio frequency electromagnetic waves.",
+    "reasoning": [
+      "WHO, FCC, and health organizations confirm zero physical link between non-ionizing 5G radio waves and biological viruses.",
+      "Outbreaks occurred in regions with zero 5G infrastructure."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "WHO: 5G mobile networks DO NOT spread disease", "domain": "who.int", "credibility": 99, "url": "https://www.who.int/emergencies/diseases/novel-coronavirus-2019/advice-for-public/myth-busters" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 98.0, "source_credibility": 99.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_014",
+    "claim": "Volcanoes emit more carbon dioxide annually than human industry",
+    "verdict": "FALSE",
+    "confidence": 98,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "False. Global human industrial emissions generate roughly 35 to 40 billion metric tons of CO2 per year, whereas all subaerial and submarine volcanoes combined emit only 0.13 to 0.44 billion tons annually (under 1% of human emissions).",
+    "reasoning": [
+      "USGS geological survey research confirms human activities emit at least 100 times more CO2 annually than all global volcanic activity combined.",
+      "Published in peer-reviewed geophysics literature."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "USGS: Which emits more carbon dioxide: volcanoes or human activities?", "domain": "usgs.gov", "credibility": 98, "url": "https://www.usgs.gov/faqs/which-emits-more-carbon-dioxide-volcanoes-or-human-activities" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 98.0, "cross_encoder": 97.0, "source_credibility": 98.0, "final_confidence": 98 }
+  },
+  {
+    "id": "ds_015",
+    "claim": "mRNA COVID-19 vaccines alter human DNA",
+    "verdict": "FALSE",
+    "confidence": 99,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Debunked. mRNA vaccines deliver temporary instructions to cells in the cytoplasm to make spike protein. mRNA never enters the cell nucleus where human DNA resides and breaks down quickly.",
+    "reasoning": [
+      "CDC and WHO molecular biology explanations show mRNA cannot integrate into genomic DNA without reverse transcriptase and integrase enzymes.",
+      "mRNA degrades naturally within hours to days."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "CDC Myths and Facts about COVID-19 Vaccines", "domain": "cdc.gov", "credibility": 99, "url": "https://www.cdc.gov/coronavirus/2019-ncov/vaccines/facts.html" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 98.0, "source_credibility": 99.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_016",
+    "claim": "Antibiotics are effective in treating viral infections",
+    "verdict": "FALSE",
+    "confidence": 99,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "False. Antibiotics target bacterial cell structures and processes. They have zero efficacy against viral pathogens such as influenza, the common cold, or COVID-19.",
+    "reasoning": [
+      "CDC and WHO guidance warns against using antibiotics for viral infections, as it contributes to antibiotic resistance."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "CDC: Antibiotic Use Questions and Answers", "domain": "cdc.gov", "credibility": 99, "url": "https://www.cdc.gov/antibiotic-use/q-and-a.html" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 99.0, "cross_encoder": 98.0, "source_credibility": 99.0, "final_confidence": 99 }
+  },
+  {
+    "id": "ds_017",
+    "claim": "The Great Wall of China is visible from orbit with the naked eye",
+    "verdict": "FALSE",
+    "confidence": 96,
+    "claim_type": "GENERAL",
+    "summary": "False. Astronauts from NASA and the Chinese space program confirm the Great Wall is not visible from low Earth orbit without camera lenses or binoculars because its materials blend in with surrounding terrain and it is only a few meters wide.",
+    "reasoning": [
+      "Astronaut Yang Liwei and NASA astronauts confirmed the Great Wall cannot be identified with the naked eye from space.",
+      "Optical resolution of human vision at 300+ km altitude makes narrow structures invisible."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "NASA: Is the Great Wall of China Visible from Space?", "domain": "nasa.gov", "credibility": 98, "url": "https://www.nasa.gov/vision/space/workinginspace/great_wall.html" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 96.0, "cross_encoder": 95.0, "source_credibility": 98.0, "final_confidence": 96 }
+  },
+  {
+    "id": "ds_018",
+    "claim": "Vitamin C prevents human coronavirus infection",
+    "verdict": "MISLEADING",
+    "confidence": 92,
+    "claim_type": "SCIENCE_HEALTH",
+    "summary": "Misleading. While Vitamin C is an essential nutrient supporting immune function, scientific reviews show high-dose Vitamin C does not prevent coronavirus infection or act as a cure.",
+    "reasoning": [
+      "NIH and Cochrane Reviews confirm no significant prevention benefit of prophylactic Vitamin C for viral infections."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "NIH Dietary Supplements for Immune Function and COVID-19", "domain": "nih.gov", "credibility": 98, "url": "https://ods.od.nih.gov/factsheets/COVID19-HealthProfessional/" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 92.0, "cross_encoder": 90.0, "source_credibility": 98.0, "final_confidence": 92 }
+  },
+  {
+    "id": "ds_019",
+    "claim": "Electric vehicles have zero total lifetime carbon footprint",
+    "verdict": "MISLEADING",
+    "confidence": 94,
+    "claim_type": "GENERAL",
+    "summary": "Misleading. Electric vehicles eliminate tailpipe emissions, but manufacturing (especially battery mining) and electricity generation grid power still carry lifetime carbon emissions, though lower than fossil fuel vehicles.",
+    "reasoning": [
+      "EPA and Argonne National Laboratory lifecycle analyses show EVs produce 50-70% lower lifetime emissions than gas cars, but not zero."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "EPA Electric Vehicle Myths and Realities", "domain": "epa.gov", "credibility": 98, "url": "https://www.epa.gov/greenvehicles/electric-vehicle-myths" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 94.0, "cross_encoder": 92.0, "source_credibility": 98.0, "final_confidence": 94 }
+  },
+  {
+    "id": "ds_020",
+    "claim": "Solar and wind energy cause permanent power grid instability",
+    "verdict": "MISLEADING",
+    "confidence": 93,
+    "claim_type": "GENERAL",
+    "summary": "Misleading. While renewable energy sources are intermittent, grid energy storage (batteries, pumped hydro) and smart grid management prevent power grid instability.",
+    "reasoning": [
+      "Department of Energy (DOE) and NREL studies confirm grid integration strategies maintain 99.99% reliability with high renewable penetration."
+    ],
+    "supporting_sources": [],
+    "contradicting_sources": [
+      { "title": "NREL Grid Modernization and Renewable Integration", "domain": "nrel.gov", "credibility": 97, "url": "https://www.nrel.gov/grid/" }
+    ],
+    "confidence_breakdown": { "semantic_similarity": 93.0, "cross_encoder": 91.0, "source_credibility": 97.0, "final_confidence": 93 }
+  }
+]
