@@ -2100,7 +2100,11 @@ function initCommandPalette() {
 
   if (!overlay || !input || !list) return;
 
-  trigger?.addEventListener("click", toggleCommandPalette);
+  trigger?.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleCommandPalette();
+  });
 
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) closeCommandPalette();
@@ -2128,7 +2132,7 @@ function toggleCommandPalette() {
   const overlay = $("command-palette-overlay");
   if (!overlay) return;
 
-  if (overlay.classList.contains("hidden")) {
+  if (overlay.classList.contains("hidden") || !overlay.classList.contains("active")) {
     openCommandPalette();
   } else {
     closeCommandPalette();
@@ -2141,9 +2145,12 @@ function openCommandPalette() {
   if (!overlay) return;
 
   overlay.classList.remove("hidden");
+  overlay.classList.add("active");
+  overlay.setAttribute("aria-hidden", "false");
+
   if (input) {
     input.value = "";
-    input.focus();
+    setTimeout(() => input.focus(), 60);
   }
 
   const list = $("command-list");
@@ -2154,7 +2161,11 @@ function openCommandPalette() {
 
 function closeCommandPalette() {
   const overlay = $("command-palette-overlay");
-  if (overlay) overlay.classList.add("hidden");
+  if (overlay) {
+    overlay.classList.add("hidden");
+    overlay.classList.remove("active");
+    overlay.setAttribute("aria-hidden", "true");
+  }
 }
 
 function executeCommand(action) {
