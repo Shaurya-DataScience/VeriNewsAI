@@ -3,9 +3,12 @@
 # ==============================================================================
 FROM python:3.10-slim
 
-# Prevent Python from writing .pyc files and enable unbuffered logging
+# Prevent Python from writing .pyc files and enable unbuffered logging with minimal memory footprint
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
+    OMP_NUM_THREADS=1 \
+    MKL_NUM_THREADS=1 \
+    TOKENIZERS_PARALLELISM=false \
     PORT=8000
 
 WORKDIR /app
@@ -20,8 +23,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 # Copy dependency specifications
 COPY requirements.txt .
 
-# Install PyTorch CPU and Python dependencies with cache optimization
-RUN pip install --no-cache-dir -r requirements.txt
+# Install lightweight PyTorch CPU wheels followed by application requirements
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
+    pip install --no-cache-dir -r requirements.txt
 
 # Copy application backend and frontend files
 COPY backend/ /app/backend/
