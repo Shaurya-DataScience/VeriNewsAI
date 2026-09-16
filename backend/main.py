@@ -22,10 +22,14 @@ from services.hybrid_verifier import run_hybrid_verification
 # Startup Environment Safeguards
 # ==========================================================
 
+from dotenv import load_dotenv
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+load_dotenv()
+
 START_TIME = time.time()
 TAVILY_KEY = os.getenv("TAVILY_API_KEY")
 if not TAVILY_KEY:
-    print("⚠️ WARNING: TAVILY_API_KEY is not set. Real-time web news search will fall back to mock search mode.")
+    print("[WARNING] TAVILY_API_KEY is not set. Real-time web news search will fall back to mock search mode.")
 
 # ==========================================================
 # Global Sessions for Streaming
@@ -71,6 +75,19 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+from starlette.requests import Request
+
+@app.middleware("http")
+async def telemetry_error_logging_middleware(request: Request, call_next):
+    try:
+        response = await call_next(request)
+        if response.status_code >= 500:
+            database.log_error(str(request.url.path), f"HTTP_{response.status_code}", f"Server returned status {response.status_code}")
+        return response
+    except Exception as exc:
+        database.log_error(str(request.url.path), type(exc).__name__, str(exc))
+        raise exc
 
 # Register Phase 2 & Enterprise Routers
 app.include_router(verification_router)
@@ -220,6 +237,7 @@ def purge_cache_endpoint(max_age_hours: int = 24):
 # ==========================================================
 
 @app.get("/stream_summary/{search_id}")
+@app.get("/stream-summary/{search_id}")
 def stream_summary_endpoint(search_id: str):
     if search_id not in SEARCH_SESSIONS:
         def empty_generator():
@@ -298,6 +316,7 @@ def get_monitor_history():
 
 @app.get("/health")
 @app.get("/healthz")
+@app.get("/api/health")
 def health():
     db_status = "connected"
     try:

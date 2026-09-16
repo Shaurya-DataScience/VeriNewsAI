@@ -9,6 +9,8 @@ from services.credibility import get_source_score
 # Load Environment Variables
 # ==========================================================
 
+load_dotenv(os.path.join(os.path.dirname(os.path.dirname(__file__)), ".env"))
+load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 load_dotenv()
 
 api_key = os.getenv("TAVILY_API_KEY")

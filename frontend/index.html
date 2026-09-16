@@ -13,7 +13,12 @@
     <meta property="og:url" content="https://verinews.ai">
     <meta property="og:title" content="VeriNews AI | Enterprise AI Fact Verification">
     <meta property="og:description" content="Cross-check news claims, articles, and viral stories against verified publishers with explainable AI summaries and grounding scores.">
-    <meta property="og:image" content="https://verinews.ai/assets/og-preview.png">
+    <meta property="og:image" content="assets/og-preview.png">
+    <meta property="og:image:secure_url" content="https://verinews.ai/assets/og-preview.png">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="VeriNews AI - Trusted AI Fact Verification & Neural Grounding Platform">
     <meta property="og:site_name" content="VeriNews AI">
 
     <!-- Twitter Card (Twitter / X) -->
@@ -21,7 +26,7 @@
     <meta name="twitter:site" content="@verinews_ai">
     <meta name="twitter:title" content="VeriNews AI | Enterprise AI Fact Verification">
     <meta name="twitter:description" content="Instantly verify any news claim with real-time semantic search, source credibility scoring, and AI hallucination detection.">
-    <meta name="twitter:image" content="https://verinews.ai/assets/og-preview.png">
+    <meta name="twitter:image" content="assets/og-preview.png">
 
     <title>VeriNews AI | Trusted AI Fact Verification</title>
 
@@ -38,12 +43,28 @@
     <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
 
     <!-- External Libraries -->
+    <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Transformers.js In-Browser Neural Pipeline -->
+    <script type="module">
+        try {
+            const { pipeline, env } = await import('https://cdn.jsdelivr.net/npm/@xenova/transformers@2.17.2');
+            env.allowLocalModels = false;
+            env.useBrowserCache = true;
+            window.Transformers = { pipeline, env };
+            console.log("[Transformers.js] In-browser neural runtime initialized.");
+            window.dispatchEvent(new CustomEvent('transformers-ready'));
+        } catch (err) {
+            console.warn("[Transformers.js] CDN load deferred or offline:", err);
+        }
+    </script>
+
     <script defer src="https://unpkg.com/lucide@latest"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script defer src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <!-- Stylesheet with Cache Buster -->
-    <link rel="stylesheet" href="style.css?v=35.0">
+    <link rel="stylesheet" href="style.css?v=44.0">
 </head>
 
 <body class="dark">
@@ -250,10 +271,10 @@
         <!-- Mode Tabs -->
         <div class="tabs" role="tablist">
             <button class="tab active" role="tab" aria-selected="true" data-mode="claim">Claim</button>
-            <button class="tab" role="tab" aria-selected="false" data-mode="batch">Batch / Debate</button>
-            <button class="tab" role="tab" aria-selected="false" data-mode="url">URL</button>
-            <button class="tab" role="tab" aria-selected="false" data-mode="article">Article</button>
-            <button class="tab" role="tab" aria-selected="false" data-mode="image">Image / Meme</button>
+            <button class="tab" tabindex="0" role="tab" aria-selected="false" data-mode="batch">Batch / Debate</button>
+            <button class="tab" tabindex="0" role="tab" aria-selected="false" data-mode="url">URL</button>
+            <button class="tab" tabindex="0" role="tab" aria-selected="false" data-mode="article">Article</button>
+            <button class="tab" tabindex="0" role="tab" aria-selected="false" data-mode="image">Image / Meme</button>
         </div>
 
         <!-- Batch / Debate Quick Helpers (Shown when batch tab is active) -->
@@ -663,8 +684,9 @@
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Sources: Dynamic Filter Toolbar with Search & Counts -->
+    <!-- Sources: Dynamic Filter Toolbar with Search & Counts -->
         <div class="sources-explorer-toolbar">
             <div class="source-filters-row">
                 <div class="source-filter-chips" role="tablist">
@@ -965,7 +987,6 @@
                 <i data-lucide="bell"></i> Monitor Claim
             </button>
         </div>
-    </div>
 </section>
 
 <!-- ========================================= -->
@@ -1012,7 +1033,11 @@
             <button id="refresh-analytics-btn" class="btn btn-secondary btn-sm"><i data-lucide="refresh-cw"></i> Refresh Data</button>
         </div>
 
-        <div class="analytics-overview-grid">
+                <div class="analytics-overview-grid">
+            <div class="analytics-chart-container" style="grid-column: 1 / -1; margin-bottom: 2rem; background: var(--bg-secondary); border-radius: 12px; padding: 1.5rem; border: 1px solid var(--border-primary);">
+                <canvas id="analyticsChart" height="80"></canvas>
+            </div>
+
             <div class="analytics-stat-box">
                 <span class="stat-box-label">Total Verified Claims</span>
                 <strong id="analytics-total-claims" class="stat-box-num">18,752</strong>
@@ -1060,64 +1085,307 @@
 <!-- Admin Control Panel Modal -->
 <!-- ========================================= -->
 <div id="admin-modal-overlay" class="modal-overlay hidden" aria-hidden="true" role="dialog">
-    <div class="admin-modal-card">
+    <div class="admin-modal-card admin-modal-card-expanded">
         <div class="admin-modal-header">
             <div>
                 <div class="admin-modal-title"><i data-lucide="sliders"></i> Phase 2 Admin System Dashboard</div>
-                <span class="admin-subtitle">Live DB Stats, Embedding Metrics & Ensemble Weight Config</span>
+                <span class="admin-subtitle">Live DB Stats, Telemetry, Cache & Security Control</span>
             </div>
-            <button id="close-admin-btn" class="icon-btn" aria-label="Close Admin Modal"><i data-lucide="x"></i></button>
-        </div>
-
-        <div class="admin-grid">
-            <div class="admin-metric-card">
-                <span>Database File Size</span>
-                <strong id="admin-db-size">158.2 MB</strong>
-                <small>SQLite verinews_cache.db</small>
-            </div>
-            <div class="admin-metric-card">
-                <span>Vector Embeddings</span>
-                <strong id="admin-embedding-count">158,240</strong>
-                <small>all-MiniLM-L6-v2 384d</small>
-            </div>
-            <div class="admin-metric-card">
-                <span>Cache Hit Ratio</span>
-                <strong id="admin-cache-ratio">94.8%</strong>
-                <small>Sub-20ms short-circuit</small>
-            </div>
-            <div class="admin-metric-card">
-                <span>Avg Search Latency</span>
-                <strong id="admin-latency">14.2 ms</strong>
-                <small>Parallel Tavily + Vector</small>
+            <div class="admin-header-actions">
+                <div class="live-telemetry-badge" id="admin-live-status-pill">
+                    <span class="pulse-dot"></span> Live Telemetry
+                </div>
+                <button id="admin-refresh-btn" class="icon-btn" title="Refresh Live Data" aria-label="Refresh Data"><i data-lucide="rotate-cw"></i></button>
+                <button id="close-admin-btn" class="icon-btn" aria-label="Close Admin Modal"><i data-lucide="x"></i></button>
             </div>
         </div>
 
-        <!-- Weight Adjuster Controls -->
-        <div class="admin-weight-adjuster">
-            <h4><i data-lucide="cpu"></i> Ensemble Weight Configuration</h4>
-            <div class="weight-control-row">
-                <label>DistilBERT Dataset Prediction (35% default)</label>
-                <input type="range" id="weight-dataset" min="0" max="100" value="35">
-                <span id="val-weight-dataset">35%</span>
-            </div>
-            <div class="weight-control-row">
-                <label>Cross-Encoder Neural Rerank (30% default)</label>
-                <input type="range" id="weight-cross" min="0" max="100" value="30">
-                <span id="val-weight-cross">30%</span>
-            </div>
-            <div class="weight-control-row">
-                <label>Source Credibility Index (20% default)</label>
-                <input type="range" id="weight-cred" min="0" max="100" value="20">
-                <span id="val-weight-cred">20%</span>
-            </div>
-            <div class="weight-control-row">
-                <label>Semantic Vector Similarity (15% default)</label>
-                <input type="range" id="weight-sim" min="0" max="100" value="15">
-                <span id="val-weight-sim">15%</span>
+        <!-- Navigation Tabs -->
+        <div class="admin-tab-nav" role="tablist">
+            <button class="admin-tab-btn active" data-admin-tab="telemetry" role="tab" aria-selected="true"><i data-lucide="activity"></i> Telemetry</button>
+            <button class="admin-tab-btn" data-admin-tab="cache" role="tab" aria-selected="false"><i data-lucide="database"></i> Cache Database</button>
+            <button class="admin-tab-btn" data-admin-tab="security" role="tab" aria-selected="false"><i data-lucide="shield-alert"></i> Security & Blacklist</button>
+            <button class="admin-tab-btn" data-admin-tab="health" role="tab" aria-selected="false"><i data-lucide="heart-pulse"></i> System Health</button>
+            <button class="admin-tab-btn" data-admin-tab="weights" role="tab" aria-selected="false"><i data-lucide="sliders"></i> Ensemble Weights</button>
+        </div>
+
+        <!-- TAB 1: Telemetry Dashboard -->
+        <div id="admin-tab-telemetry-panel" class="admin-tab-panel active">
+            <div class="admin-grid">
+                <div class="admin-metric-card">
+                    <span>Database File Size</span>
+                    <strong id="admin-db-size">158.2 MB</strong>
+                    <small>SQLite verinews_cache.db</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>Vector Embeddings</span>
+                    <strong id="admin-embedding-count">158,240</strong>
+                    <small>all-MiniLM-L6-v2 384d</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>Cache Hit Ratio</span>
+                    <strong id="admin-cache-ratio">94.8%</strong>
+                    <small>Sub-20ms short-circuit</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>Avg Search Latency</span>
+                    <strong id="admin-latency">14.2 ms</strong>
+                    <small>Parallel Tavily + Vector</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>Total Claims Verified</span>
+                    <strong id="admin-total-claims">--</strong>
+                    <small>All-time claim evaluations</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>Claims Verified Today</span>
+                    <strong id="admin-claims-today">--</strong>
+                    <small>Today's verification throughput</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>API Error Rate</span>
+                    <strong id="admin-error-rate">0.0%</strong>
+                    <small>Logged exceptions / total</small>
+                </div>
+                <div class="admin-metric-card">
+                    <span>System Uptime</span>
+                    <strong id="admin-uptime">--</strong>
+                    <small>FastAPI engine process</small>
+                </div>
             </div>
 
-            <div class="admin-actions">
-                <button id="save-config-btn" class="btn btn-primary btn-sm"><i data-lucide="save"></i> Save Configuration</button>
+            <!-- Latency & Verdict Summary -->
+            <div class="admin-sub-card">
+                <div class="admin-sub-card-header">
+                    <h5><i data-lucide="bar-chart-2"></i> Claims Verdict Distribution</h5>
+                    <span id="admin-verdict-breakdown-text" class="text-muted text-xs">Loading breakdown...</span>
+                </div>
+                <div class="admin-verdict-bar-track">
+                    <div id="admin-bar-true" class="verdict-bar bar-true" style="width: 55%;" title="True"></div>
+                    <div id="admin-bar-false" class="verdict-bar bar-false" style="width: 25%;" title="False"></div>
+                    <div id="admin-bar-misleading" class="verdict-bar bar-misleading" style="width: 10%;" title="Misleading"></div>
+                    <div id="admin-bar-unverified" class="verdict-bar bar-unverified" style="width: 10%;" title="Unverified"></div>
+                </div>
+                <div class="admin-verdict-legend">
+                    <span><span class="legend-dot dot-true"></span> True: <b id="admin-cnt-true">--</b></span>
+                    <span><span class="legend-dot dot-false"></span> False: <b id="admin-cnt-false">--</b></span>
+                    <span><span class="legend-dot dot-misleading"></span> Misleading: <b id="admin-cnt-misleading">--</b></span>
+                    <span><span class="legend-dot dot-unverified"></span> Unverified: <b id="admin-cnt-unverified">--</b></span>
+                </div>
+            </div>
+
+            <!-- Recent Error Logs List -->
+            <div class="admin-sub-card">
+                <div class="admin-sub-card-header">
+                    <h5><i data-lucide="alert-triangle"></i> Recent API Error Logs</h5>
+                    <small id="admin-error-count-label" class="text-muted">0 errors recorded</small>
+                </div>
+                <div id="admin-error-logs-container" class="admin-log-list">
+                    <div class="admin-empty-state">No errors reported in this session. All systems operational.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Cache Database Management -->
+        <div id="admin-tab-cache-panel" class="admin-tab-panel hidden">
+            <div class="admin-panel-toolbar">
+                <div class="admin-search-box">
+                    <i data-lucide="search"></i>
+                    <input type="text" id="admin-cache-search-input" placeholder="Filter cached queries...">
+                </div>
+                <div class="admin-btn-group">
+                    <button id="admin-clear-cache-btn" class="btn btn-outline-danger btn-sm"><i data-lucide="trash-2"></i> Wipe All Cache</button>
+                    <button id="admin-vacuum-db-btn" class="btn btn-outline-secondary btn-sm"><i data-lucide="zap"></i> Vacuum DB</button>
+                </div>
+            </div>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Query Text</th>
+                            <th>Cached Verdict</th>
+                            <th>Payload Size</th>
+                            <th>Cached Timestamp</th>
+                            <th class="text-right">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="admin-cache-table-body">
+                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading cache entries...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- TAB 3: Security & Malicious Query Blacklist -->
+        <div id="admin-tab-security-panel" class="admin-tab-panel hidden">
+            <div class="admin-sub-card">
+                <h5><i data-lucide="shield-plus"></i> Flag New Query Pattern</h5>
+                <p class="admin-help-text">Intercept malicious queries (prompt injections, abusive inputs) before executing neural pipelines.</p>
+                <div class="admin-form-row">
+                    <input type="text" id="admin-flag-pattern" class="form-input" placeholder="Keyword or pattern to blacklist (e.g. drop table, bypass prompt)...">
+                    <input type="text" id="admin-flag-reason" class="form-input" placeholder="Administrative rationale (e.g. Prompt injection)...">
+                    <button id="admin-add-flag-btn" class="btn btn-primary btn-sm"><i data-lucide="plus"></i> Add Rule</button>
+                </div>
+            </div>
+
+            <div class="admin-sub-card">
+                <div class="admin-sub-card-header">
+                    <h5><i data-lucide="shield-alert"></i> Active Blacklisted Patterns</h5>
+                    <span id="admin-flagged-count" class="badge badge-sm badge-neutral">0 active rules</span>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Pattern / Keyword</th>
+                                <th>Reason</th>
+                                <th>Date Added</th>
+                                <th class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-flagged-table-body">
+                            <tr><td colspan="4" class="text-center py-4 text-muted">No patterns currently blacklisted.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="admin-sub-card">
+                <div class="admin-sub-card-header">
+                    <h5><i data-lucide="file-text"></i> Intercepted Security Audit Log</h5>
+                    <small class="text-muted">Queries blocked by security rules</small>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Attempted Query</th>
+                                <th>Matched Pattern</th>
+                                <th>Enforcement</th>
+                                <th>Timestamp</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-security-events-body">
+                            <tr><td colspan="4" class="text-center py-4 text-muted">No security violations recorded.</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: System Health Monitoring -->
+        <div id="admin-tab-health-panel" class="admin-tab-panel hidden">
+            <div class="admin-grid">
+                <div class="admin-health-card">
+                    <div class="health-card-header">
+                        <span>CPU Utilization</span>
+                        <strong id="admin-health-cpu-val">0.0%</strong>
+                    </div>
+                    <div class="health-progress-track">
+                        <div id="admin-health-cpu-bar" class="health-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <small>System CPU Core Activity</small>
+                </div>
+                <div class="admin-health-card">
+                    <div class="health-card-header">
+                        <span>RAM Memory</span>
+                        <strong id="admin-health-ram-val">0 MB</strong>
+                    </div>
+                    <div class="health-progress-track">
+                        <div id="admin-health-ram-bar" class="health-progress-fill health-bar-warn" style="width: 0%;"></div>
+                    </div>
+                    <small id="admin-health-ram-sub">Process RAM consumption</small>
+                </div>
+                <div class="admin-health-card">
+                    <div class="health-card-header">
+                        <span>Disk Storage</span>
+                        <strong id="admin-health-disk-val">0%</strong>
+                    </div>
+                    <div class="health-progress-track">
+                        <div id="admin-health-disk-bar" class="health-progress-fill" style="width: 0%;"></div>
+                    </div>
+                    <small id="admin-health-disk-sub">Storage volume</small>
+                </div>
+                <div class="admin-health-card">
+                    <div class="health-card-header">
+                        <span>Process Info</span>
+                        <strong id="admin-health-pid">PID: --</strong>
+                    </div>
+                    <small id="admin-health-threads">Threads: -- active</small>
+                    <small>FastAPI Engine on Port 8000</small>
+                </div>
+            </div>
+
+            <div class="admin-sub-card">
+                <h5><i data-lucide="cpu"></i> Subsystem Operational Status</h5>
+                <div class="admin-services-grid">
+                    <div class="service-status-item">
+                        <div>
+                            <strong>DistilBERT Neural Classifier</strong>
+                            <small>distilbert-base-uncased fine-tuned</small>
+                        </div>
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Operational</span>
+                    </div>
+                    <div class="service-status-item">
+                        <div>
+                            <strong>Cross-Encoder Neural Reranker</strong>
+                            <small>ms-marco-MiniLM-L-6-v2</small>
+                        </div>
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Operational</span>
+                    </div>
+                    <div class="service-status-item">
+                        <div>
+                            <strong>Vector Embedding Engine</strong>
+                            <small>all-MiniLM-L6-v2 (384-dim)</small>
+                        </div>
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Operational</span>
+                    </div>
+                    <div class="service-status-item">
+                        <div>
+                            <strong>SQLite 3 Storage Engine</strong>
+                            <small>WAL mode / Normal sync</small>
+                        </div>
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Operational</span>
+                    </div>
+                    <div class="service-status-item">
+                        <div>
+                            <strong>Tavily Search Engine</strong>
+                            <small>Live Web Retrieval API</small>
+                        </div>
+                        <span class="badge badge-success"><i data-lucide="check-circle-2"></i> Connected</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 5: Ensemble Weights & Tuning (Original IDs Strictly Preserved) -->
+        <div id="admin-tab-weights-panel" class="admin-tab-panel hidden">
+            <div class="admin-weight-adjuster">
+                <h4><i data-lucide="cpu"></i> Ensemble Weight Configuration</h4>
+                <div class="weight-control-row">
+                    <label>DistilBERT Dataset Prediction (35% default)</label>
+                    <input type="range" id="weight-dataset" min="0" max="100" value="35">
+                    <span id="val-weight-dataset">35%</span>
+                </div>
+                <div class="weight-control-row">
+                    <label>Cross-Encoder Neural Rerank (30% default)</label>
+                    <input type="range" id="weight-cross" min="0" max="100" value="30">
+                    <span id="val-weight-cross">30%</span>
+                </div>
+                <div class="weight-control-row">
+                    <label>Source Credibility Index (20% default)</label>
+                    <input type="range" id="weight-cred" min="0" max="100" value="20">
+                    <span id="val-weight-cred">20%</span>
+                </div>
+                <div class="weight-control-row">
+                    <label>Semantic Vector Similarity (15% default)</label>
+                    <input type="range" id="weight-sim" min="0" max="100" value="15">
+                    <span id="val-weight-sim">15%</span>
+                </div>
+
+                <div class="admin-actions">
+                    <button id="save-config-btn" class="btn btn-primary btn-sm"><i data-lucide="save"></i> Save Configuration</button>
+                </div>
             </div>
         </div>
     </div>
@@ -1170,12 +1438,7 @@
                 <div class="footer-status-row"><span>Summarization</span> <strong class="text-success">Online</strong></div>
             </div>
 
-            <div class="footer-column">
-                <h4>Legal</h4>
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Security</a>
-            </div>
+
         </div>
 
         <div class="footer-divider"></div>
@@ -1315,9 +1578,9 @@
 <!-- ========================================= -->
 <div id="offline-mode-banner" class="offline-banner hidden">
     <span class="offline-dot"></span>
-    <i data-lucide="wifi-off"></i>
-    <strong>Offline Mode Active</strong>
-    <span>— Verified locally using Phi-3-mini AI model</span>
+    <i data-lucide="cpu"></i>
+    <strong>In-Browser AI Active</strong>
+    <span id="offline-mode-desc">— In-Browser ONNX Neural Verification (Transformers.js)</span>
     <button class="offline-dismiss-btn" onclick="this.parentElement.classList.add('hidden')" aria-label="Dismiss"><i data-lucide="x"></i></button>
 </div>
 
@@ -1474,7 +1737,7 @@
     </div>
 </section>
 
-<script src="script.js?v=35.0"></script>
+<script src="script.js?v=44.0"></script>
 
 </body>
 </html>

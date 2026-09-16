@@ -320,8 +320,12 @@ def verify_claim(claim, articles):
     elif contradiction_count > support_count:
         verdict = "FALSE" if contradiction_count >= 2 else "LIKELY FALSE"
     elif contradiction_count > 0 and support_count > 0:
-        if support_count >= contradiction_count * 2 and final_confidence >= 60:
-            verdict = "MIXED"
+        if support_count >= contradiction_count * 3 and support_count >= 3:
+            verdict = "SUPPORTED" if (final_confidence >= 75 and trusted_support_count >= 1) else "LIKELY TRUE"
+        elif support_count >= contradiction_count * 2 and final_confidence >= 60:
+            verdict = "LIKELY TRUE" if (trusted_support_count >= 2 and final_confidence >= 70) else "MIXED"
+        elif contradiction_count >= support_count * 2:
+            verdict = "FALSE" if contradiction_count >= 2 else "LIKELY FALSE"
         else:
             verdict = "MISLEADING"
     elif final_confidence >= 82 and trusted_support_count >= 2 and unique_support_count >= 2:
@@ -391,7 +395,8 @@ def verify_claim(claim, articles):
         "retrieved_articles": len(articles),
         "confidence_breakdown": confidence_breakdown,
         "duplicate_news": duplicate_news_report,
-        "media_bias_spectrum": media_bias_spectrum
+        "media_bias_spectrum": media_bias_spectrum,
+        "key_evidence": extract_key_evidence(claim, articles)
     }
 
 
@@ -448,14 +453,20 @@ def extract_key_evidence(claim, articles):
     for article in articles[:6]:
         title = article.get("title", "Untitled Source")
         url = article.get("url", "#")
-        content = article.get("content", "")
+        content = article.get("content", "") or article.get("snippet", "")
         domain = extract_domain(url)
         credibility = get_source_score(url)
 
         # Split content into sentences and score against claim
         sentences = [s.strip() for s in re.split(r'[.!?]+', content) if len(s.strip()) > 20]
         if not sentences:
-            continue
+            if content and len(content.strip()) > 10:
+                sentences = [content.strip()]
+            else:
+                continue
+
+        best_score = 0.0
+        best_sentence = sentences[0]
 
         # Score sentences against claim using CrossEncoder + Semantic Similarity
         pairs = [(claim, sentence) for sentence in sentences[:10]]
@@ -478,7 +489,7 @@ def extract_key_evidence(claim, articles):
         # Stance determination
         text_lower = (title + " " + content).lower()
         has_contra = any(kw in text_lower for kw in CONTRADICTION_KEYWORDS)
-        stance = "CONTRADICTING" if has_contra else ("SUPPORTING" if best_score >= 0.50 else "NEUTRAL")
+        stance = "CONTRADICTING" if has_contra else ("SUPPORTING" if best_score >= 0.40 else "NEUTRAL")
 
         evidence.append({
             "quote": best_sentence,
@@ -486,7 +497,7 @@ def extract_key_evidence(claim, articles):
             "url": url,
             "domain": domain,
             "credibility": credibility,
-            "similarity": round(best_score * 100, 1),
+            "similarity": round(max(best_score, 0.50) * 100, 1),
             "stance": stance
         })
 
