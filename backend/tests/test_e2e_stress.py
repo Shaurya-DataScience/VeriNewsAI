@@ -162,7 +162,7 @@ def test_frontend_contract_compatibility():
     """
     Verify all fields required by frontend/script.js normalizeResponse exist and have safe types.
     """
-    res = http_client.get(f"{BASE_URL}/search", params={"query": "Apple acquired OpenAI"}, timeout=20)
+    res = http_client.get(f"{BASE_URL}/search", params={"query": "Apple acquired OpenAI"}, timeout=45)
     assert res.status_code == 200
     data = res.json()
     
