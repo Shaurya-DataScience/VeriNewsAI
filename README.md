@@ -1,3 +1,13 @@
+---
+title: VeriNews AI Backend
+emoji: 🛡️
+colorFrom: indigo
+colorTo: cyan
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
 # VeriNews AI — Intelligent Hybrid Fact Verification Engine (Phase 2)
 
 **VeriNews AI** is an enterprise-grade AI fact verification platform that combines local vector similarity search, fine-tuned DistilBERT claim classification (LIAR + FEVER), neural Cross-Encoder re-ranking, domain credibility scoring, and live Tavily web retrieval into an explainable, weighted ensemble engine.

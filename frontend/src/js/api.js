@@ -1,5 +1,9 @@
 /* API Wrapper & Streaming Service */
-export const API_URL = window.__VERINEWS_API_URL__ || (location.hostname === 'localhost' || location.hostname === '127.0.0.1' ? 'http://127.0.0.1:8000' : location.origin);
+export const API_URL = window.__VERINEWS_API_URL__ ||
+  (typeof localStorage !== "undefined" && localStorage.getItem("verinews_api_url")) ||
+  (location.hostname === 'localhost' || location.hostname === '127.0.0.1'
+    ? 'http://127.0.0.1:8000'
+    : 'https://01shauryathakur-verinews-backend.hf.space');
 
 export async function fetchVerification(claimText) {
   const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(claimText)}`);

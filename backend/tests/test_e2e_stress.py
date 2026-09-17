@@ -4,16 +4,41 @@ Validates live backend verification pipeline, fake/hoax detection, streaming SSE
 edge cases, and frontend payload contract compatibility.
 """
 
+import os
+import sys
 import pytest
 import requests
 import json
 import time
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
+
+from fastapi.testclient import TestClient
+from main import app
+
 BASE_URL = "http://127.0.0.1:8000"
+
+try:
+    _r = requests.get(f"{BASE_URL}/health", timeout=1.0)
+    _live_server = (_r.status_code == 200)
+except Exception:
+    _live_server = False
+
+class ClientWrapper:
+    def __init__(self, test_client):
+        self.tc = test_client
+
+    def get(self, url, params=None, timeout=None, stream=False):
+        if _live_server:
+            return requests.get(url, params=params, timeout=timeout, stream=stream)
+        path = url.replace(BASE_URL, "")
+        return self.tc.get(path, params=params)
+
+http_client = ClientWrapper(TestClient(app))
 
 def test_health_check():
     """Verify backend health and operational status."""
-    res = requests.get(f"{BASE_URL}/health", timeout=10)
+    res = http_client.get(f"{BASE_URL}/health", timeout=10)
     assert res.status_code == 200
     data = res.json()
     assert data.get("status") == "healthy"
@@ -26,7 +51,7 @@ def test_wild_fake_claim_detection():
     Expect the model and consensus to detect falsehood or lack of verified evidence.
     """
     fake_claim = "NASA discovered a massive alien spaceship buried under the ice in Antarctica"
-    res = requests.get(
+    res = http_client.get(
         f"{BASE_URL}/search",
         params={"query": fake_claim, "force_refresh": "true"},
         timeout=30
@@ -64,7 +89,7 @@ def test_genuine_claim_verification():
     Test standard factual claim: 'NASA confirmed liquid water discovered on Mars'
     """
     true_claim = "NASA confirmed liquid water discovered on Mars"
-    res = requests.get(
+    res = http_client.get(
         f"{BASE_URL}/search",
         params={"query": true_claim},
         timeout=30
@@ -83,7 +108,7 @@ def test_edge_case_special_characters_and_emojis():
     Test robustness against emojis, symbols, and formatting noise.
     """
     claim = "🚀 BREAKING: Scientist finds 100% cure for all aging in 2026? [SHOCKING] #viral @science"
-    res = requests.get(
+    res = http_client.get(
         f"{BASE_URL}/search",
         params={"query": claim},
         timeout=30
@@ -104,7 +129,7 @@ def test_edge_case_long_article_payload():
         "with thousands of autonomous ocean floats known as Argo. "
     ) * 4
     
-    res = requests.get(
+    res = http_client.get(
         f"{BASE_URL}/search",
         params={"query": long_text},
         timeout=30
@@ -118,13 +143,13 @@ def test_streaming_summary_endpoint():
     Verify the SSE streaming endpoint responds with event stream headers.
     """
     # 1. Do a search to generate a search_id
-    res = requests.get(f"{BASE_URL}/search", params={"query": "Mars water"}, timeout=20)
+    res = http_client.get(f"{BASE_URL}/search", params={"query": "Mars water"}, timeout=20)
     assert res.status_code == 200
     data = res.json()
     search_id = data.get("search_id")
     
     if search_id:
-        stream_res = requests.get(
+        stream_res = http_client.get(
             f"{BASE_URL}/stream-summary/{search_id}",
             stream=True,
             timeout=10
@@ -137,7 +162,7 @@ def test_frontend_contract_compatibility():
     """
     Verify all fields required by frontend/script.js normalizeResponse exist and have safe types.
     """
-    res = requests.get(f"{BASE_URL}/search", params={"query": "Apple acquired OpenAI"}, timeout=20)
+    res = http_client.get(f"{BASE_URL}/search", params={"query": "Apple acquired OpenAI"}, timeout=20)
     assert res.status_code == 200
     data = res.json()
     
