@@ -3,8 +3,9 @@ title: VeriNews AI Backend
 emoji: 🛡️
 colorFrom: indigo
 colorTo: blue
-sdk: docker
-app_port: 8000
+sdk: gradio
+sdk_version: 4.44.0
+app_file: app.py
 pinned: false
 ---
 
