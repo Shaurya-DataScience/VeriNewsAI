@@ -16,16 +16,42 @@ except ImportError as e:
     raise ImportError("Please install: pip install sentence-transformers scikit-learn") from e
 
 # ============================================================
-# Load AI Models (Loads once at server startup)
+# Low-Memory Lazy AI Model Loader (Render 512MB RAM Optimized)
 # ============================================================
 
-print("Loading Sentence Transformer...")
-embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
+import gc
+import torch
+torch.set_num_threads(1)
 
-print("Loading Cross Encoder...")
-cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2")
+_embedding_model = None
+_cross_encoder = None
 
-print("Verifier Models Loaded Successfully.")
+def get_embedding_model():
+    global _embedding_model
+    if _embedding_model is None:
+        print("[Memory-Opt] Loading Sentence Transformer (all-MiniLM-L6-v2)...")
+        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+        _embedding_model.eval()
+        gc.collect()
+        print("[Memory-Opt] Sentence Transformer Ready.")
+    return _embedding_model
+
+def get_cross_encoder():
+    global _cross_encoder
+    if _cross_encoder is None:
+        print("[Memory-Opt] Loading Cross Encoder (ms-marco-MiniLM-L-6-v2)...")
+        _cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu")
+        _cross_encoder.model.eval()
+        gc.collect()
+        print("[Memory-Opt] Cross Encoder Ready.")
+    return _cross_encoder
+
+def __getattr__(name):
+    if name == "embedding_model":
+        return get_embedding_model()
+    if name == "cross_encoder":
+        return get_cross_encoder()
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 # ============================================================
 # Trusted Domains Registry
@@ -153,13 +179,17 @@ def extract_domain(url):
 # ============================================================
 
 def calculate_semantic_similarity(claim, article_text):
-    claim_embedding = embedding_model.encode([claim])
-    article_embedding = embedding_model.encode([article_text[:1200]])
+    model = get_embedding_model()
+    with torch.no_grad():
+        claim_embedding = model.encode([claim])
+        article_embedding = model.encode([article_text[:1200]])
     similarity = cosine_similarity(claim_embedding, article_embedding)[0][0]
     return float(similarity)
 
 def calculate_cross_score(claim, article_text):
-    score = float(cross_encoder.predict([(claim, article_text[:1200])])[0])
+    encoder = get_cross_encoder()
+    with torch.no_grad():
+        score = float(encoder.predict([(claim, article_text[:1200])])[0])
     # Sigmoid normalization between 0 and 1
     score = 1 / (1 + math.exp(-score))
     return float(score)

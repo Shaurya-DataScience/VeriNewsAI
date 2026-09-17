@@ -3,7 +3,8 @@
 # Sentence Embedding Clustering for Wire Service / Syndicate News
 # ============================================================
 
-from services.verifier import embedding_model, extract_domain
+import torch
+from services.verifier import get_embedding_model, extract_domain
 from sklearn.metrics.pairwise import cosine_similarity
 
 def detect_duplicate_news(articles: list, similarity_threshold: float = 0.90) -> dict:
@@ -21,7 +22,8 @@ def detect_duplicate_news(articles: list, similarity_threshold: float = 0.90) ->
 
     # Extract text representation
     texts = [f"{a.get('title', '')} {a.get('content', '')[:600]}" for a in articles]
-    embeddings = embedding_model.encode(texts)
+    with torch.no_grad():
+        embeddings = get_embedding_model().encode(texts)
     sim_matrix = cosine_similarity(embeddings)
 
     n = len(articles)

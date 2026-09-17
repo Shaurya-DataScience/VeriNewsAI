@@ -5,7 +5,8 @@
 
 import re
 import math
-from services.verifier import embedding_model, cross_encoder
+import torch
+from services.verifier import get_embedding_model, get_cross_encoder
 from sklearn.metrics.pairwise import cosine_similarity
 
 def split_into_sentences(text: str) -> list:
@@ -59,8 +60,11 @@ def detect_hallucinations(summary_text: str, articles: list) -> dict:
     ]
     combined_evidence = " ".join(evidence_texts)[:4000]
 
-    sentence_embeddings = embedding_model.encode(sentences)
-    evidence_embeddings = embedding_model.encode([combined_evidence])[0]
+    emb_model = get_embedding_model()
+    cross_enc = get_cross_encoder()
+    with torch.no_grad():
+        sentence_embeddings = emb_model.encode(sentences)
+        evidence_embeddings = emb_model.encode([combined_evidence])[0]
 
     sentence_reports = []
     supported_cnt = 0
@@ -74,7 +78,8 @@ def detect_hallucinations(summary_text: str, articles: list) -> dict:
         cos_pct = max(0.0, min(100.0, cos_sim * 100))
 
         # 2. Cross Encoder Rerank Score
-        cross_raw = float(cross_encoder.predict([(sentence, combined_evidence[:1000])])[0])
+        with torch.no_grad():
+            cross_raw = float(cross_enc.predict([(sentence, combined_evidence[:1000])])[0])
         cross_pct = (1 / (1 + math.exp(-cross_raw))) * 100
 
         # Composite Grounding Score

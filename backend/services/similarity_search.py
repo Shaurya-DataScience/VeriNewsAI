@@ -7,17 +7,25 @@ import os
 import json
 import numpy as np
 from datetime import datetime
-from services.verifier import embedding_model
+from services.verifier import get_embedding_model
 import database
 
 DATASET_PATH = os.path.join(os.path.dirname(__file__), "..", "data", "verified_dataset.json")
+
+import torch
 
 class ClaimSimilarityStore:
     def __init__(self):
         self.claims_db = []
         self.dataset_claims = []
-        self.load_dataset_seed()
-        self.reload_from_db()
+        self._initialized = False
+
+    def _ensure_loaded(self):
+        """Lazy load pre-verified seed and db embeddings on first query."""
+        if not self._initialized:
+            self._initialized = True
+            self.load_dataset_seed()
+            self.reload_from_db()
 
     def load_dataset_seed(self):
         """Load curated pre-verified offline dataset and pre-compute embeddings."""
@@ -41,6 +49,7 @@ class ClaimSimilarityStore:
         Check query against pre-indexed offline dataset.
         Returns matching dataset payload if similarity >= threshold (0 API calls!).
         """
+        self._ensure_loaded()
         if not self.dataset_claims or not query or not query.strip():
             return None
 
@@ -77,7 +86,8 @@ class ClaimSimilarityStore:
 
     def get_embedding(self, text: str) -> np.ndarray:
         """Generate 384-d normalized vector embedding using shared SentenceTransformer."""
-        vec = embedding_model.encode([text])[0]
+        with torch.no_grad():
+            vec = get_embedding_model().encode([text])[0]
         norm = np.linalg.norm(vec)
         if norm > 0:
             vec = vec / norm
@@ -85,6 +95,7 @@ class ClaimSimilarityStore:
 
     def add_claim(self, claim_id: str, claim: str, verdict: str, confidence: int, summary: str = "", timestamp: str = None):
         """Add a new verified claim to the vector store and DB."""
+        self._ensure_loaded()
         if not timestamp:
             timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -110,6 +121,7 @@ class ClaimSimilarityStore:
         """
         Fast vector similarity search (<15ms). Returns top_k similar claims.
         """
+        self._ensure_loaded()
         if not self.claims_db or not query or not query.strip():
             return []
 
@@ -123,15 +135,14 @@ class ClaimSimilarityStore:
             similarities = np.dot(db_vecs, query_vec)
 
             # Ensure similarities is 1D array
-            if np.ndim(similarities) == 0:
+            if similarities.ndim == 0:
                 similarities = np.array([similarities])
 
             results = []
-            for idx, score in enumerate(similarities):
-                sim_pct = float(round(float(score) * 100, 1))
-                # Filter out non-relevant claims (< 45% similarity)
-                if sim_pct >= 45.0:
-                    item = valid_items[idx].copy()
+            for item, sim in zip(valid_items, similarities):
+                sim_pct = round(float(sim) * 100, 1)
+                if sim_pct >= 20.0:
+                    item = item.copy()
                     item["similarity"] = sim_pct
                     if "embedding" in item:
                         del item["embedding"]
@@ -154,7 +165,8 @@ def rerank_candidates_with_cross_encoder(query: str, candidates: list) -> list:
     try:
         from services.verifier import cross_encoder
         pairs = [(query, c.get("claim", "")) for c in candidates]
-        raw_scores = cross_encoder.predict(pairs)
+        with torch.no_grad():
+            raw_scores = cross_encoder.predict(pairs)
 
         for candidate, raw_s in zip(candidates, raw_scores):
             # Sigmoid normalization of logits to 0-100% scale

@@ -17,7 +17,7 @@ from services.similarity_search import find_dataset_match, get_similar_claims, r
 from services.classifier import classify_claim
 from services.confidence_engine import calculate_weighted_confidence
 from services.search import search_news
-from services.verifier import verify_claim as verify_with_tavily_articles, calculate_media_bias_spectrum, cross_encoder
+from services.verifier import verify_claim as verify_with_tavily_articles, calculate_media_bias_spectrum
 from services.bias_radar import analyze_sources_bias
 from services.xai_explainer import build_xai_explanation_report
 from services.multi_agent_jury import run_multi_agent_jury
