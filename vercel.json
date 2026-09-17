@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://01shauryathakur-verinews-backend.hf.space/api/:path*"
+      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/api/:path*"
     },
     {
       "source": "/health",
-      "destination": "https://01shauryathakur-verinews-backend.hf.space/health"
+      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/health"
     },
     {
       "source": "/verify",
-      "destination": "https://01shauryathakur-verinews-backend.hf.space/verify"
+      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/verify"
     },
     {
       "source": "/search",
-      "destination": "https://01shauryathakur-verinews-backend.hf.space/search"
+      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/search"
     }
   ]
 }

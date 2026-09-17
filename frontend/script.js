@@ -12,7 +12,7 @@ const API_URL = window.__VERINEWS_API_URL__ ||
   (typeof localStorage !== "undefined" && localStorage.getItem("verinews_api_url")) ||
   (!location.hostname || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:"
     ? "http://127.0.0.1:8000"
-    : "https://01shauryathakur-verinews-backend.hf.space");
+    : "https://locked-pam-rouge-frederick.trycloudflare.com");
 
 const LOADING_MESSAGES = [
   "Claim Received",
