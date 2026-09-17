@@ -27,6 +27,8 @@ backend/models/distilbert_factchecker/
 *.pt
 *.bin
 *.h5
+*.jsonl
+backend/data/*.jsonl
 
 # Testing & Coverage
 .pytest_cache/
