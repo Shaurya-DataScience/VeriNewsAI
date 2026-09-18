@@ -2,19 +2,19 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/api/:path*"
+      "destination": "https://verinewsai-1.onrender.com/api/:path*"
     },
     {
       "source": "/health",
-      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/health"
+      "destination": "https://verinewsai-1.onrender.com/health"
     },
     {
       "source": "/verify",
-      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/verify"
+      "destination": "https://verinewsai-1.onrender.com/verify"
     },
     {
       "source": "/search",
-      "destination": "https://locked-pam-rouge-frederick.trycloudflare.com/search"
+      "destination": "https://verinewsai-1.onrender.com/search"
     }
   ]
 }

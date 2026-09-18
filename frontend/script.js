@@ -12,7 +12,7 @@ const API_URL = window.__VERINEWS_API_URL__ ||
   (typeof localStorage !== "undefined" && localStorage.getItem("verinews_api_url")) ||
   (!location.hostname || location.hostname === "localhost" || location.hostname === "127.0.0.1" || location.protocol === "file:"
     ? "http://127.0.0.1:8000"
-    : "https://locked-pam-rouge-frederick.trycloudflare.com");
+    : "https://verinewsai-1.onrender.com");
 
 const LOADING_MESSAGES = [
   "Claim Received",

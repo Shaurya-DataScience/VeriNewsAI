@@ -19,6 +19,7 @@ except ImportError as e:
 # Low-Memory Lazy AI Model Loader (Render 512MB RAM Optimized)
 # ============================================================
 
+import os
 import gc
 import torch
 torch.set_num_threads(1)
@@ -36,15 +37,23 @@ def get_embedding_model():
         print("[Memory-Opt] Sentence Transformer Ready.")
     return _embedding_model
 
+LOW_MEMORY_MODE = os.getenv("LOW_MEMORY_MODE", "true").lower() in ["1", "true", "yes"]
+
 def get_cross_encoder():
     global _cross_encoder
+    if LOW_MEMORY_MODE:
+        return None
     if _cross_encoder is None:
-        print("[Memory-Opt] Loading Cross Encoder (ms-marco-MiniLM-L-6-v2)...")
-        _cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu")
-        _cross_encoder.model.eval()
-        gc.collect()
-        print("[Memory-Opt] Cross Encoder Ready.")
-    return _cross_encoder
+        try:
+            print("[Memory-Opt] Loading Cross Encoder (ms-marco-MiniLM-L-6-v2)...")
+            _cross_encoder = CrossEncoder("cross-encoder/ms-marco-MiniLM-L-6-v2", device="cpu")
+            _cross_encoder.model.eval()
+            gc.collect()
+            print("[Memory-Opt] Cross Encoder Ready.")
+        except Exception as e:
+            print(f"[Memory-Opt] CrossEncoder disabled: {e}")
+            _cross_encoder = False
+    return _cross_encoder if _cross_encoder is not False else None
 
 def __getattr__(name):
     if name == "embedding_model":
@@ -188,11 +197,15 @@ def calculate_semantic_similarity(claim, article_text):
 
 def calculate_cross_score(claim, article_text):
     encoder = get_cross_encoder()
-    with torch.no_grad():
-        score = float(encoder.predict([(claim, article_text[:1200])])[0])
-    # Sigmoid normalization between 0 and 1
-    score = 1 / (1 + math.exp(-score))
-    return float(score)
+    if encoder is None:
+        return calculate_semantic_similarity(claim, article_text)
+    try:
+        with torch.no_grad():
+            score = float(encoder.predict([(claim, article_text[:1200])])[0])
+        score = 1 / (1 + math.exp(-score))
+        return float(score)
+    except Exception:
+        return calculate_semantic_similarity(claim, article_text)
 
 def is_trusted_source(url):
     url_lower = str(url).lower()

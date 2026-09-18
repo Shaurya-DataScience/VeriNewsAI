@@ -164,6 +164,10 @@ def rerank_candidates_with_cross_encoder(query: str, candidates: list) -> list:
 
     try:
         from services.verifier import cross_encoder
+        if cross_encoder is None:
+            for c in candidates:
+                c["cross_score"] = c.get("similarity", 75.0)
+            return candidates
         pairs = [(query, c.get("claim", "")) for c in candidates]
         with torch.no_grad():
             raw_scores = cross_encoder.predict(pairs)

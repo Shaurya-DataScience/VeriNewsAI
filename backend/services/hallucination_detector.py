@@ -78,9 +78,15 @@ def detect_hallucinations(summary_text: str, articles: list) -> dict:
         cos_pct = max(0.0, min(100.0, cos_sim * 100))
 
         # 2. Cross Encoder Rerank Score
-        with torch.no_grad():
-            cross_raw = float(cross_enc.predict([(sentence, combined_evidence[:1000])])[0])
-        cross_pct = (1 / (1 + math.exp(-cross_raw))) * 100
+        if cross_enc is not None:
+            try:
+                with torch.no_grad():
+                    cross_raw = float(cross_enc.predict([(sentence, combined_evidence[:1000])])[0])
+                cross_pct = (1 / (1 + math.exp(-cross_raw))) * 100
+            except Exception:
+                cross_pct = cos_pct
+        else:
+            cross_pct = cos_pct
 
         # Composite Grounding Score
         grounding_score = round(cos_pct * 0.50 + cross_pct * 0.50, 1)
