@@ -2,8 +2,14 @@ import re
 import urllib.request
 import urllib.parse
 from typing import Dict, Any, List
-from bs4 import BeautifulSoup
 from urllib.parse import urlparse
+
+HAS_BS4 = False
+try:
+    from bs4 import BeautifulSoup
+    HAS_BS4 = True
+except ImportError:
+    BeautifulSoup = None
 
 def fetch_and_parse_article(url: str) -> Dict[str, Any]:
     """
@@ -24,6 +30,20 @@ def fetch_and_parse_article(url: str) -> Dict[str, Any]:
             "domain": urlparse(url).netloc,
             "paragraphs": [],
             "error": f"Failed to retrieve URL: {str(e)}"
+        }
+
+    if not HAS_BS4 or BeautifulSoup is None:
+        clean_text = re.sub(r'<[^>]+>', ' ', html)
+        paragraphs = [p.strip() for p in clean_text.split('\n') if len(p.strip()) > 40]
+        return {
+            "title": "Article Content",
+            "url": url,
+            "domain": urlparse(url).netloc,
+            "author": "Web Source",
+            "date": "Recent",
+            "paragraphs": paragraphs[:10],
+            "text": " ".join(paragraphs[:10]),
+            "extracted_claims": []
         }
 
     soup = BeautifulSoup(html, "html.parser")

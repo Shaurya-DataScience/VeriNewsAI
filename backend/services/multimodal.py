@@ -2,7 +2,15 @@ import io
 import os
 import re
 from typing import Dict, Any, Optional
-from PIL import Image, ImageChops, ImageEnhance
+
+HAS_PIL = False
+try:
+    from PIL import Image, ImageChops, ImageEnhance
+    HAS_PIL = True
+except ImportError:
+    Image = None
+    ImageChops = None
+    ImageEnhance = None
 
 # Optional OCR dependencies
 HAS_PYTESSERACT = False
@@ -26,6 +34,8 @@ def extract_text_from_image(image_bytes: bytes) -> str:
     Extract text from uploaded screenshot, meme, or news infographic.
     Tries pytesseract -> easyocr -> PIL metadata heuristic fallback.
     """
+    if not HAS_PIL or Image is None:
+        return ""
     try:
         img = Image.open(io.BytesIO(image_bytes))
         
@@ -68,6 +78,14 @@ def perform_error_level_analysis(image_bytes: bytes, quality: int = 90) -> Dict[
     Error Level Analysis (ELA) detects differences in compression levels across an image.
     Modified or spliced regions typically have significantly different error levels.
     """
+    if not HAS_PIL or Image is None:
+        return {
+            "tamper_score": 0.0,
+            "tamper_verdict": "IMAGE_ANALYSIS_UNAVAILABLE",
+            "risk_level": "LOW",
+            "max_difference": 0,
+            "details": "Pillow image library not available for ELA computation"
+        }
     try:
         original = Image.open(io.BytesIO(image_bytes)).convert("RGB")
         
