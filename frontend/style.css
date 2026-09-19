@@ -1651,6 +1651,111 @@ body:not(.dark) .evidence-quote-card {
 .admin-actions { display: flex; justify-content: flex-end; margin-top: 1rem; }
 
 /* ==========================================================================
+   Admin PIN Authentication Modal
+   ========================================================================== */
+.admin-auth-card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: 2.25rem 2rem;
+  width: 100%;
+  max-width: 440px;
+  box-shadow: var(--shadow-xl);
+  animation: slideUp 0.25s ease-out;
+  position: relative;
+  text-align: center;
+}
+.admin-auth-icon-wrap {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(99, 102, 241, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 1.25rem;
+  color: var(--color-primary);
+}
+.admin-auth-icon-wrap i {
+  width: 28px;
+  height: 28px;
+}
+.admin-auth-title {
+  font-size: 1.25rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+.admin-auth-desc {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.45;
+}
+.admin-pin-wrapper {
+  position: relative;
+  margin-bottom: 0.75rem;
+}
+.admin-pin-input {
+  width: 100%;
+  padding: 0.85rem 3rem 0.85rem 1rem;
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 1.2rem;
+  text-align: center;
+  letter-spacing: 3px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.admin-pin-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+.admin-pin-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+.admin-pin-toggle:hover {
+  color: var(--color-primary);
+}
+.admin-auth-error {
+  color: var(--color-error, #ef4444);
+  font-size: 0.84rem;
+  font-weight: 600;
+  margin-bottom: 1.2rem;
+  min-height: 1.2rem;
+  display: none;
+}
+.admin-auth-actions {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+}
+.admin-auth-card.shake {
+  animation: authShake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+}
+@keyframes authShake {
+  10%, 90% { transform: translate3d(-2px, 0, 0); }
+  20%, 80% { transform: translate3d(4px, 0, 0); }
+  30%, 50%, 70% { transform: translate3d(-6px, 0, 0); }
+  40%, 60% { transform: translate3d(6px, 0, 0); }
+}
+
+/* ==========================================================================
    22. Source Drawer
    ========================================================================== */
 .source-drawer-overlay {
