@@ -7,7 +7,7 @@ import torch
 from services.verifier import get_embedding_model, extract_domain
 from sklearn.metrics.pairwise import cosine_similarity
 
-def detect_duplicate_news(articles: list, similarity_threshold: float = 0.90) -> dict:
+def detect_duplicate_news(articles: list, similarity_threshold: float = 0.90, precomputed_embeddings=None) -> dict:
     """
     Groups wire-service syndications and republished news stories.
     Articles with >= 90% content similarity are merged into a single story group.
@@ -20,10 +20,13 @@ def detect_duplicate_news(articles: list, similarity_threshold: float = 0.90) ->
             "message": "No articles retrieved."
         }
 
-    # Extract text representation
-    texts = [f"{a.get('title', '')} {a.get('content', '')[:600]}" for a in articles]
-    with torch.no_grad():
-        embeddings = get_embedding_model().encode(texts)
+    # Extract text representation or use precomputed embeddings
+    if precomputed_embeddings is not None and len(precomputed_embeddings) == len(articles):
+        embeddings = precomputed_embeddings
+    else:
+        texts = [f"{a.get('title', '')} {a.get('content', '')[:600]}" for a in articles]
+        with torch.no_grad():
+            embeddings = get_embedding_model().encode(texts)
     sim_matrix = cosine_similarity(embeddings)
 
     n = len(articles)

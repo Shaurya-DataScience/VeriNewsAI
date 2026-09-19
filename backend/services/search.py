@@ -89,8 +89,8 @@ def search_news(query):
     try:
         response = client.search(
             query=query,
-            search_depth="advanced",
-            max_results=8
+            search_depth="basic",
+            max_results=6
         )
 
         results = response.get("results", [])
@@ -104,8 +104,8 @@ def search_news(query):
         # 3. Rank by source credibility
         results = rank_articles(results)
 
-        # Return top 8 retrieved articles
-        return results[:8]
+        # Return top 6 retrieved articles for fast, high-quality verification
+        return results[:6]
     except Exception as e:
         print(f"Tavily search error: {e}")
         return []

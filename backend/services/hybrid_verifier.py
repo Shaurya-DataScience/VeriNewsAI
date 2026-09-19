@@ -13,7 +13,7 @@ from database import (
     is_query_flagged,
     record_security_event
 )
-from services.similarity_search import find_dataset_match, get_similar_claims, rerank_candidates_with_cross_encoder
+from services.similarity_search import find_dataset_match, get_similar_claims, rerank_candidates_with_cross_encoder, vector_store
 from services.classifier import classify_claim
 from services.confidence_engine import calculate_weighted_confidence
 from services.search import search_news
@@ -122,10 +122,11 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
     threshold = float(cfg.get("similarity_threshold", 0.85))
 
     # Step 1 & 2: Local Vector Database Search & Real Cross-Encoder Re-Ranking
-    similar_claims = get_similar_claims(query, top_k=5)
+    query_vec = vector_store.get_embedding(query)
+    similar_claims = get_similar_claims(query, top_k=5, query_vec=query_vec)
     similar_claims = rerank_candidates_with_cross_encoder(query, similar_claims)
 
-    ds_match = find_dataset_match(query, threshold=threshold)
+    ds_match = find_dataset_match(query, threshold=threshold, query_vec=query_vec)
 
     # Calculate real CrossEncoder score
     if ds_match:

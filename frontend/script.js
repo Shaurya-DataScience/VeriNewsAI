@@ -491,6 +491,7 @@ async function verifyClaim() {
     const result = normalizeResponse(data, query);
 
     saveRecentSearch(result.claim, result.verdict, result.confidence);
+    await completeProgressAndTimeline();
     renderDashboard(result);
 
     if (data.search_id && !data.cached) {
@@ -500,6 +501,7 @@ async function verifyClaim() {
     showToast("Verification completed!", "success");
   } catch (error) {
     console.warn("Backend API unavailable or error:", error);
+    await completeProgressAndTimeline();
     // ACCURACY RULE: When backend fails or evidence is unavailable, return UNVERIFIED (0% confidence).
     const unverifiedResult = getUnverifiedFallbackResult(query);
     saveRecentSearch(unverifiedResult.claim, unverifiedResult.verdict, unverifiedResult.confidence);
@@ -542,6 +544,20 @@ function showErrorPage() {
   show(dom.error);
   scrollToElement("error-state");
 }
+
+// Pre-warm backend container on claim input focus or initial typing
+let isBackendPrewarmed = false;
+function prewarmBackend() {
+  if (isBackendPrewarmed) return;
+  isBackendPrewarmed = true;
+  fetch(`${API_URL}/health`, { method: "GET", cache: "no-store" })
+    .then(r => r.json())
+    .then(() => console.log("[Pre-Warm] Backend container active & ready."))
+    .catch(() => {});
+}
+
+dom.input?.addEventListener("focus", prewarmBackend, { once: true });
+dom.input?.addEventListener("input", prewarmBackend, { once: true });
 
 dom.verify?.addEventListener("click", verifyClaim);
 
@@ -754,23 +770,41 @@ function clearLoadingTimers() {
 
 function animatePipeline() {
   const steps = document.querySelectorAll(".verification-timeline .timeline-item");
+  if (!steps || steps.length === 0) return;
 
-  steps.forEach((step, index) => {
-    step.classList.remove("active", "completed");
-    
-    const startTimer = setTimeout(() => {
-      step.classList.add("active");
+  steps.forEach(s => s.classList.remove("active", "completed"));
 
-      const completeTimer = setTimeout(() => {
-        step.classList.remove("active");
-        step.classList.add("completed");
-      }, 200);
+  // Step 0: Claim Submitted -> Immediately completed
+  if (steps[0]) {
+    steps[0].classList.add("completed");
+  }
 
-      state.loadingTimers.push(completeTimer);
-    }, index * 140);
+  // Step 1: Sources Retrieved (active immediately)
+  if (steps[1]) {
+    steps[1].classList.add("active");
+  }
 
-    state.loadingTimers.push(startTimer);
-  });
+  const scheduleStep = (prevIdx, currIdx, delay) => {
+    const timer = setTimeout(() => {
+      if (steps[prevIdx]) {
+        steps[prevIdx].classList.remove("active");
+        steps[prevIdx].classList.add("completed");
+      }
+      if (steps[currIdx]) {
+        steps[currIdx].classList.add("active");
+      }
+    }, delay);
+    state.loadingTimers.push(timer);
+  };
+
+  // Step 1 complete -> Step 2 active (Evidence Found)
+  scheduleStep(1, 2, 400);
+  // Step 2 complete -> Step 3 active (Semantic Analysis)
+  scheduleStep(2, 3, 900);
+  // Step 3 complete -> Step 4 active (Credibility Analysis)
+  scheduleStep(3, 4, 1500);
+  // Step 4 complete -> Step 5 active (Verdict Generated - hold here until API resolves)
+  scheduleStep(4, 5, 2200);
 }
 
 function animateProgressBar() {
@@ -779,22 +813,45 @@ function animateProgressBar() {
 
   if (!fill) return;
 
-  const stages = [20, 40, 65, 85, 100];
-  let stageIndex = 0;
+  fill.style.width = "15%";
+  if (percent) percent.textContent = "15%";
 
-  const updateProgress = () => {
-    if (stageIndex >= stages.length) return;
+  const stages = [
+    { target: 35, delay: 400 },
+    { target: 55, delay: 900 },
+    { target: 75, delay: 1500 },
+    { target: 90, delay: 2200 }
+  ];
 
-    const value = stages[stageIndex];
-    fill.style.width = `${value}%`;
-    if (percent) percent.textContent = `${value}%`;
-    stageIndex += 1;
-
-    const timer = setTimeout(updateProgress, 130);
+  stages.forEach(({ target, delay }) => {
+    const timer = setTimeout(() => {
+      fill.style.width = `${target}%`;
+      if (percent) percent.textContent = `${target}%`;
+    }, delay);
     state.loadingTimers.push(timer);
-  };
+  });
+}
 
-  updateProgress();
+function completeProgressAndTimeline() {
+  return new Promise((resolve) => {
+    clearLoadingTimers();
+    const fill = $("loading-progress");
+    const percent = $("progress-percent");
+
+    if (fill) fill.style.width = "100%";
+    if (percent) percent.textContent = "100%";
+
+    const steps = document.querySelectorAll(".verification-timeline .timeline-item");
+    steps.forEach(s => {
+      s.classList.remove("active");
+      s.classList.add("completed");
+    });
+
+    const loadingText = $("loadingText");
+    if (loadingText) loadingText.textContent = "Report Completed!";
+
+    setTimeout(resolve, 180);
+  });
 }
 
 function animateLoadingText() {
@@ -804,7 +861,7 @@ function animateLoadingText() {
   LOADING_MESSAGES.forEach((message, index) => {
     const timer = setTimeout(() => {
       loadingText.textContent = `${message}...`;
-    }, index * 380);
+    }, index * 450);
 
     state.loadingTimers.push(timer);
   });

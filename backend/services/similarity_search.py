@@ -28,23 +28,28 @@ class ClaimSimilarityStore:
             self.reload_from_db()
 
     def load_dataset_seed(self):
-        """Load curated pre-verified offline dataset and pre-compute embeddings."""
+        """Load curated pre-verified offline dataset and pre-compute embeddings in a single batch."""
         try:
             if os.path.exists(DATASET_PATH):
                 with open(DATASET_PATH, "r", encoding="utf-8") as f:
                     raw_data = json.load(f)
 
-                for item in raw_data:
-                    emb = self.get_embedding(item["claim"])
-                    item_copy = item.copy()
-                    item_copy["embedding"] = emb
-                    self.dataset_claims.append(item_copy)
-                print(f"Loaded {len(self.dataset_claims)} pre-verified claims from offline dataset.")
+                if raw_data:
+                    claims = [item["claim"] for item in raw_data]
+                    model = get_embedding_model()
+                    with torch.no_grad():
+                        embeddings = model.encode(claims, convert_to_numpy=True, normalize_embeddings=True)
+
+                    for item, emb in zip(raw_data, embeddings):
+                        item_copy = item.copy()
+                        item_copy["embedding"] = emb
+                        self.dataset_claims.append(item_copy)
+                    print(f"Loaded {len(self.dataset_claims)} pre-verified claims from offline dataset (batch encoded).")
         except Exception as e:
             print(f"Error loading offline dataset seed: {e}")
             self.dataset_claims = []
 
-    def find_dataset_match(self, query: str, threshold: float = 0.82) -> dict:
+    def find_dataset_match(self, query: str, threshold: float = 0.82, query_vec: np.ndarray = None) -> dict:
         """
         Check query against pre-indexed offline dataset.
         Returns matching dataset payload if similarity >= threshold (0 API calls!).
@@ -54,7 +59,8 @@ class ClaimSimilarityStore:
             return None
 
         try:
-            query_vec = self.get_embedding(query)
+            if query_vec is None:
+                query_vec = self.get_embedding(query)
             best_match = None
             best_score = 0.0
 
@@ -117,7 +123,7 @@ class ClaimSimilarityStore:
             "timestamp": timestamp
         })
 
-    def search_similar(self, query: str, top_k: int = 5) -> list:
+    def search_similar(self, query: str, top_k: int = 5, query_vec: np.ndarray = None) -> list:
         """
         Fast vector similarity search (<15ms). Returns top_k similar claims.
         """
@@ -126,7 +132,8 @@ class ClaimSimilarityStore:
             return []
 
         try:
-            query_vec = self.get_embedding(query)
+            if query_vec is None:
+                query_vec = self.get_embedding(query)
             valid_items = [item for item in self.claims_db if item.get("embedding") and len(item["embedding"]) == len(query_vec)]
             if not valid_items:
                 return []
@@ -190,11 +197,11 @@ def rerank_candidates_with_cross_encoder(query: str, candidates: list) -> list:
 # Singleton instance
 vector_store = ClaimSimilarityStore()
 
-def get_similar_claims(claim: str, top_k: int = 5) -> list:
-    return vector_store.search_similar(claim, top_k=top_k)
+def get_similar_claims(claim: str, top_k: int = 5, query_vec: np.ndarray = None) -> list:
+    return vector_store.search_similar(claim, top_k=top_k, query_vec=query_vec)
 
 def register_verified_claim(claim_id: str, claim: str, verdict: str, confidence: int, summary: str = "", timestamp: str = None):
     vector_store.add_claim(claim_id, claim, verdict, confidence, summary, timestamp)
 
-def find_dataset_match(query: str, threshold: float = 0.82) -> dict:
-    return vector_store.find_dataset_match(query, threshold=threshold)
+def find_dataset_match(query: str, threshold: float = 0.82, query_vec: np.ndarray = None) -> dict:
+    return vector_store.find_dataset_match(query, threshold=threshold, query_vec=query_vec)
