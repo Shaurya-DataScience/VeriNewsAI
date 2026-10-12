@@ -657,7 +657,7 @@ function normalizeResponse(data, originalQuery) {
     confidence: Math.round(data.confidence || 0),
     summary: data.summary || "Verification concluded via evidence analysis.",
     reasoning: Array.isArray(data.reasoning) && data.reasoning.length > 0 ? data.reasoning : [
-      `Cross-referenced "${claimText.substring(0, 40)}..." with global news archives.`,
+      `Cross-referenced "${claimText.length > 70 ? claimText.slice(0, 67) + '...' : claimText}" with global news archives.`,
       "Analyzed semantic relevance using neural embedding similarity.",
       "Evidence alignment completed with multi-factor confidence scoring."
     ],
@@ -1088,6 +1088,7 @@ function renderUserClaim(claimText) {
   // Never display the placeholder — always use the real claim text
   const safeText = (claimText && claimText !== 'Loading claim...' && claimText !== 'Verified Claim') ? claimText : (dom.input?.value?.trim() || claimText);
   el.textContent = `"${safeText}"`;
+  el.title = safeText;
 }
 
 function renderEntities(entities, langInfo) {
@@ -3025,12 +3026,19 @@ function updateNeuralHUD(node) {
       hudType.textContent = "CLAIM HUB";
       hudType.style.color = "var(--color-primary)";
     }
-    if (hudTitle) hudTitle.textContent = data?.claim ? `"${data.claim.substring(0, 42)}..."` : "Verified News Assertion";
+    const claimText = data?.claim || "Verified News Assertion";
+    if (hudTitle) {
+      hudTitle.textContent = `"${claimText}"`;
+      hudTitle.title = claimText;
+    }
     if (hudBadge) {
       hudBadge.textContent = `${rawVerdict} (${conf}%)`;
       hudBadge.className = `hud-status-badge badge-${rawVerdict.toLowerCase()}`;
     }
-    if (hudDesc) hudDesc.textContent = "Force-directed cluster mapped across verified publishers. Drag nodes to explore structural consensus.";
+    if (hudDesc) {
+      hudDesc.textContent = "Force-directed cluster mapped across verified publishers. Drag nodes to explore structural consensus.";
+      hudDesc.title = "Force-directed cluster mapped across verified publishers. Drag nodes to explore structural consensus.";
+    }
     
     if (metricAlignment) metricAlignment.textContent = `${conf}%`;
     if (metricCred) metricCred.textContent = "96% Avg";
@@ -3042,12 +3050,19 @@ function updateNeuralHUD(node) {
       hudType.textContent = `${node.type} EVIDENCE`;
       hudType.style.color = node.color;
     }
-    if (hudTitle) hudTitle.textContent = node.domain;
+    if (hudTitle) {
+      hudTitle.textContent = node.domain || node.label || "Source Node";
+      hudTitle.title = node.fullTitle || node.domain || "";
+    }
     if (hudBadge) {
       hudBadge.textContent = `${node.credibility}% Credibility`;
       hudBadge.className = `hud-status-badge badge-${node.type === "SUPPORTING" ? "true" : "false"}`;
     }
-    if (hudDesc) hudDesc.textContent = node.quote ? `"${node.quote.substring(0, 85)}..."` : node.fullTitle;
+    const quoteText = node.quote || node.fullTitle || "Evidence snippet from verified source";
+    if (hudDesc) {
+      hudDesc.textContent = `"${quoteText}"`;
+      hudDesc.title = quoteText;
+    }
     
     if (metricAlignment) metricAlignment.textContent = `${node.cross_score}% Match`;
     if (metricCred) metricCred.textContent = `${node.credibility}% Trust`;
