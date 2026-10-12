@@ -3,18 +3,34 @@
 # Support for 50+ Languages & Cross-Lingual Vector Search
 # ============================================================
 
+import os
 import re
 from typing import Dict, Any, Tuple
-from sentence_transformers import SentenceTransformer
 
-# Multilingual Transformer Model (Loads once at server startup)
-print("Loading Multilingual Sentence Transformer (paraphrase-multilingual-MiniLM-L12-v2)...")
-try:
-    multilingual_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2")
-    print("Multilingual Transformer Model Loaded Successfully.")
-except Exception as e:
-    print(f"Warning: Multilingual model fallback to base embedding model: {e}")
-    multilingual_model = None
+# Multilingual Transformer Model (Lazy-loaded, respects LOW_MEMORY_MODE for 512MB RAM safety)
+_multilingual_model = None
+
+def get_multilingual_model():
+    global _multilingual_model
+    low_memory = os.getenv("LOW_MEMORY_MODE", "true").lower() in ["1", "true", "yes"]
+    if low_memory:
+        return None
+    if _multilingual_model is None:
+        try:
+            from sentence_transformers import SentenceTransformer
+            print("[Memory-Opt] Loading Multilingual Sentence Transformer...")
+            _multilingual_model = SentenceTransformer("sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2", device="cpu")
+            _multilingual_model.eval()
+            print("[Memory-Opt] Multilingual Transformer Model Loaded Successfully.")
+        except Exception as e:
+            print(f"Warning: Multilingual model fallback to base embedding model: {e}")
+            _multilingual_model = False
+    return _multilingual_model if _multilingual_model is not False else None
+
+def __getattr__(name):
+    if name == "multilingual_model":
+        return get_multilingual_model()
+    raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
 
 # Language Information Map (Language Code -> Name & Flag Emoji)
 LANGUAGE_MAP = {
@@ -128,14 +144,15 @@ def detect_language(text: str) -> Dict[str, Any]:
 def get_multilingual_embedding(text: str):
     """
     Generate dense vector embedding for multilingual text.
-    Uses paraphrase-multilingual-MiniLM-L12-v2 if available.
+    Uses paraphrase-multilingual-MiniLM-L12-v2 if available, else shared verifier model.
     """
-    if multilingual_model is not None:
+    model = get_multilingual_model()
+    if model is not None:
         try:
-            return multilingual_model.encode([text], convert_to_numpy=True)[0]
+            return model.encode([text], convert_to_numpy=True)[0]
         except Exception as e:
             print(f"Multilingual encoding error: {e}")
     
-    # Fallback to standard verifier embedding model
-    from services.verifier import get_claim_embedding
-    return get_claim_embedding(text)
+    # Fallback to standard shared verifier embedding model
+    from services.verifier import get_embedding_model
+    return get_embedding_model().encode([text], convert_to_numpy=True)[0]
