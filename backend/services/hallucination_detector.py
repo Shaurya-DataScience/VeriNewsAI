@@ -53,18 +53,30 @@ def detect_hallucinations(summary_text: str, articles: list) -> dict:
             ]
         }
 
-    # Aggregate article context snippets
+    # Aggregate article context snippets (truncate to 1000 chars to avoid CPU tensor bottleneck)
     evidence_texts = [
-        f"{a.get('title', '')}. {a.get('content', '')[:600]}"
-        for a in articles
+        f"{a.get('title', '')}. {a.get('content', '')[:400]}"
+        for a in articles[:4]
     ]
-    combined_evidence = " ".join(evidence_texts)[:4000]
+    combined_evidence = " ".join(evidence_texts)[:1000]
 
     emb_model = get_embedding_model()
     cross_enc = get_cross_encoder()
     with torch.no_grad():
         sentence_embeddings = emb_model.encode(sentences)
         evidence_embeddings = emb_model.encode([combined_evidence])[0]
+
+    # Batch evaluate cross-encoder to eliminate sequential inference overhead
+    cross_pcts = []
+    if cross_enc is not None and sentences:
+        try:
+            pairs = [(s, combined_evidence[:800]) for s in sentences]
+            with torch.no_grad():
+                cross_raws = cross_enc.predict(pairs)
+            for raw in cross_raws:
+                cross_pcts.append((1 / (1 + math.exp(-float(raw)))) * 100)
+        except Exception:
+            cross_pcts = []
 
     sentence_reports = []
     supported_cnt = 0
@@ -77,14 +89,9 @@ def detect_hallucinations(summary_text: str, articles: list) -> dict:
         cos_sim = float(cosine_similarity([sent_vec], [evidence_embeddings])[0][0])
         cos_pct = max(0.0, min(100.0, cos_sim * 100))
 
-        # 2. Cross Encoder Rerank Score
-        if cross_enc is not None:
-            try:
-                with torch.no_grad():
-                    cross_raw = float(cross_enc.predict([(sentence, combined_evidence[:1000])])[0])
-                cross_pct = (1 / (1 + math.exp(-cross_raw))) * 100
-            except Exception:
-                cross_pct = cos_pct
+        # 2. Cross Encoder Rerank Score (from batched prediction)
+        if idx < len(cross_pcts):
+            cross_pct = cross_pcts[idx]
         else:
             cross_pct = cos_pct
 

@@ -5371,3 +5371,79 @@ body {
   max-width: 100vw;
   overflow-x: hidden;
 }
+
+/* ==========================================================================
+   25. Light Mode Contrast & Visual Fidelity Enhancements (WCAG 2.1 AA+)
+   ========================================================================== */
+body:not(.dark) .ticker-item:hover {
+  color: #0f172a !important;
+  text-decoration: underline;
+}
+
+body:not(.dark) .badge-tag.tag-false {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fca5a5 !important;
+}
+
+body:not(.dark) .badge-tag.tag-true {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border: 1px solid #86efac !important;
+}
+
+body:not(.dark) .badge-tag.tag-misleading {
+  background: #fef3c7 !important;
+  color: #92400e !important;
+  border: 1px solid #fde68a !important;
+}
+
+body:not(.dark) .verdict-true,
+body:not(.dark) #verdict-badge.true,
+body:not(.dark) #verdict-badge.verdict-true {
+  background: #ecfdf5 !important;
+  color: #047857 !important;
+  border-color: #a7f3d0 !important;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.15) !important;
+}
+
+body:not(.dark) .verdict-false,
+body:not(.dark) #verdict-badge.false,
+body:not(.dark) #verdict-badge.verdict-false {
+  background: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fecaca !important;
+  box-shadow: 0 0 16px rgba(239, 68, 68, 0.15) !important;
+}
+
+body:not(.dark) .verdict-partially,
+body:not(.dark) #verdict-badge.partially,
+body:not(.dark) #verdict-badge.verdict-partially {
+  background: #fffbeb !important;
+  color: #b45309 !important;
+  border-color: #fde68a !important;
+  box-shadow: 0 0 16px rgba(245, 158, 11, 0.15) !important;
+}
+
+body:not(.dark) .verdict-unverified,
+body:not(.dark) #verdict-badge.unverified,
+body:not(.dark) #verdict-badge.verdict-unverified {
+  background: #f8fafc !important;
+  color: #334155 !important;
+  border-color: #cbd5e1 !important;
+}
+
+body:not(.dark) .admin-sub-card {
+  background: #f8fafc !important;
+  border-color: #e2e8f0 !important;
+}
+
+body:not(.dark) .admin-verdict-bar-track {
+  background: #e2e8f0 !important;
+}
+
+body:not(.dark) .mobile-bottom-nav {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-top-color: #e2e8f0 !important;
+}
+

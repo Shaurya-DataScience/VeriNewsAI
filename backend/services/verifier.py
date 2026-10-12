@@ -253,7 +253,7 @@ def is_trusted_source(url):
 # Main Fact Verification Engine
 # ============================================================
 
-def verify_claim(claim, articles):
+def verify_claim(claim, articles, precomputed_claim_embedding=None):
     """
     Enterprise Grade AI Fact Verification Function
     """
@@ -293,13 +293,19 @@ def verify_claim(claim, articles):
     encoder = get_cross_encoder()
 
     article_texts = [f"{a.get('title', '')} {a.get('content', '')}"[:1200] for a in articles]
-    all_texts = [claim] + article_texts
 
     with torch.no_grad():
-        all_embeddings = model.encode(all_texts, convert_to_numpy=True, normalize_embeddings=True)
-
-    claim_embedding = all_embeddings[0:1]
-    article_embeddings = all_embeddings[1:]
+        if precomputed_claim_embedding is not None:
+            claim_embedding = np.atleast_2d(precomputed_claim_embedding)
+            norm = np.linalg.norm(claim_embedding)
+            if norm > 0:
+                claim_embedding = claim_embedding / norm
+            article_embeddings = model.encode(article_texts, convert_to_numpy=True, normalize_embeddings=True)
+        else:
+            all_texts = [claim] + article_texts
+            all_embeddings = model.encode(all_texts, convert_to_numpy=True, normalize_embeddings=True)
+            claim_embedding = all_embeddings[0:1]
+            article_embeddings = all_embeddings[1:]
 
     # Vectorized cosine similarity (dot product of unit vectors)
     semantic_scores = np.dot(article_embeddings, claim_embedding.T).flatten()
@@ -570,7 +576,7 @@ def extract_key_evidence(claim, articles, precomputed_claim_embedding=None):
     article_candidates = []
     all_sentences_flat = []
 
-    for article in articles[:6]:
+    for article in articles[:5]:
         content = article.get("content", "") or article.get("snippet", "")
         # Split content into sentences
         sentences = [s.strip() for s in re.split(r'[.!?]+', content) if len(s.strip()) > 20]
@@ -579,8 +585,8 @@ def extract_key_evidence(claim, articles, precomputed_claim_embedding=None):
                 sentences = [content.strip()]
             else:
                 continue
-        # Take up to 3 best candidate sentences per article
-        top_sentences = sentences[:3]
+        # Take up to 2 best candidate sentences per article (faster inference)
+        top_sentences = sentences[:2]
         start_idx = len(all_sentences_flat)
         all_sentences_flat.extend(top_sentences)
         end_idx = len(all_sentences_flat)

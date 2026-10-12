@@ -17,7 +17,7 @@ from services.similarity_search import find_dataset_match, get_similar_claims, r
 from services.classifier import classify_claim
 from services.confidence_engine import calculate_weighted_confidence
 from services.search import search_news
-from services.verifier import verify_claim as verify_with_tavily_articles, calculate_media_bias_spectrum
+from services.verifier import verify_claim as verify_with_tavily_articles, calculate_media_bias_spectrum, get_cross_encoder
 from services.bias_radar import analyze_sources_bias
 from services.xai_explainer import build_xai_explanation_report
 from services.multi_agent_jury import run_multi_agent_jury
@@ -117,6 +117,14 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
             }
         }
 
+    # Step 0a: Instant SQLite Cache Short-Circuit (<15ms)
+    clean_query = query.strip()
+    cached_entry = database.get_from_cache(clean_query, max_age_hours=24)
+    if cached_entry and cached_entry.get("summary"):
+        cached_entry["cached"] = True
+        cached_entry["processing_time"] = round(time.time() - start_time, 3)
+        return cached_entry
+
     # Load dynamic threshold config
     cfg = get_system_config()
     threshold = float(cfg.get("similarity_threshold", 0.85))
@@ -128,11 +136,15 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
 
     ds_match = find_dataset_match(query, threshold=threshold, query_vec=query_vec)
 
-    # Calculate real CrossEncoder score
+    # Calculate real CrossEncoder score safely
     if ds_match:
         try:
-            ce_val = cross_encoder.predict([(query, ds_match["claim"])])[0]
-            real_cross_score = float(1.0 / (1.0 + math.exp(-float(ce_val)))) * 100.0
+            encoder = get_cross_encoder()
+            if encoder is not None:
+                ce_val = encoder.predict([(query, ds_match["claim"])])[0]
+                real_cross_score = float(1.0 / (1.0 + math.exp(-float(ce_val)))) * 100.0
+            else:
+                real_cross_score = float(ds_match.get("dataset_similarity", 90.0))
         except Exception:
             real_cross_score = float(ds_match.get("dataset_similarity", 90.0))
     else:
@@ -249,7 +261,7 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
         except Exception as local_err:
             print(f"[HybridVerifier] Local AI fallback notice: {local_err}")
 
-    verification_res = verify_with_tavily_articles(query, tavily_articles)
+    verification_res = verify_with_tavily_articles(query, tavily_articles, precomputed_claim_embedding=query_vec)
 
     # If offline verification succeeded, enrich verification_res with local neural knowledge
     if is_offline_verification and local_ai_details:

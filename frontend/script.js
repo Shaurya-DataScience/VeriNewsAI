@@ -53,6 +53,19 @@ const dom = {
 
 let searchMode = "claim";
 
+// Client-side instant verification cache (<5ms response for repeat queries)
+const clientClaimCache = new Map();
+
+function prewarmBackend() {
+  if (window.__verinews_warmed) return;
+  window.__verinews_warmed = true;
+  fetch(`${API_URL}/health`, { method: "GET", cache: "no-store" })
+    .catch(() => {});
+}
+
+// Proactively ping backend to eliminate Render free-tier cold-start latency
+prewarmBackend();
+
 /* ========================================
    2. Initialization
    ======================================== */
@@ -204,16 +217,45 @@ function initTabs() {
         hide(textContainer);
         show(imgContainer);
         hide(batchPills);
+        clearTimeout(typewriterTimer);
+        if (dom.verify) {
+          dom.verify.innerHTML = '<i data-lucide="scan-line"></i> Verify Image / Meme';
+        }
       } else {
         show(textContainer);
         hide(imgContainer);
         if (mode === "batch") {
           show(batchPills);
+          clearTimeout(typewriterTimer);
           if (dom.input && !dom.input.value) {
             dom.input.placeholder = "Enter multi-point speech, debate transcript, or numbered claims:\n1. Global carbon emissions fell 8% last year\n2. Renewable energy produced 40% of grid electricity\n3. Arctic sea ice reached historic maximum";
           }
+          if (dom.verify) {
+            dom.verify.innerHTML = '<i data-lucide="list-checks"></i> Verify Batch Claims';
+          }
+        } else if (mode === "url") {
+          hide(batchPills);
+          clearTimeout(typewriterTimer);
+          if (dom.input && !dom.input.value) {
+            dom.input.placeholder = "Paste full news article URL to deep-scan (e.g. https://www.bbc.com/news/article...)";
+          }
+          if (dom.verify) {
+            dom.verify.innerHTML = '<i data-lucide="globe"></i> Deep-Scan URL';
+          }
+        } else if (mode === "article") {
+          hide(batchPills);
+          clearTimeout(typewriterTimer);
+          if (dom.input && !dom.input.value) {
+            dom.input.placeholder = "Paste full article text or speech transcript here for multi-paragraph claim extraction & deep-scan...";
+          }
+          if (dom.verify) {
+            dom.verify.innerHTML = '<i data-lucide="file-text"></i> Deep-Scan Article';
+          }
         } else {
           hide(batchPills);
+          if (dom.verify) {
+            dom.verify.innerHTML = '<i data-lucide="shield-check"></i> Verify Claim';
+          }
           updatePlaceholder();
         }
       }
@@ -257,13 +299,14 @@ const examplePlaceholders = [
 
 function initTypewriterPlaceholder() {
   if (!dom.input) return;
+  if (searchMode !== "claim") return;
 
   let stringIndex = 0;
   let charIndex = 0;
   let isDeleting = false;
 
   function typeStep() {
-    if (!dom.input) return;
+    if (!dom.input || searchMode !== "claim") return;
 
     if (dom.input.value.length > 0 || document.activeElement === dom.input) {
       typewriterTimer = setTimeout(typeStep, 1000);
@@ -474,6 +517,16 @@ async function verifyClaim() {
   if (!validateInput()) return;
 
   const query = dom.input.value.trim();
+  const cleanKey = query.toLowerCase();
+
+  // Instant client cache return (<5ms)
+  if (clientClaimCache.has(cleanKey)) {
+    const cachedResult = clientClaimCache.get(cleanKey);
+    saveRecentSearch(cachedResult.claim, cachedResult.verdict, cachedResult.confidence);
+    renderDashboard(cachedResult);
+    showToast("Instant result loaded from client cache (<5ms)!", "success");
+    return;
+  }
 
   try {
     hide(dom.error);
@@ -490,6 +543,7 @@ async function verifyClaim() {
     const data = await response.json();
     const result = normalizeResponse(data, query);
 
+    clientClaimCache.set(cleanKey, result);
     saveRecentSearch(result.claim, result.verdict, result.confidence);
     await completeProgressAndTimeline();
     renderDashboard(result);
@@ -504,6 +558,7 @@ async function verifyClaim() {
     await completeProgressAndTimeline();
     // ACCURACY RULE: When backend fails or evidence is unavailable, return UNVERIFIED (0% confidence).
     const unverifiedResult = getUnverifiedFallbackResult(query);
+    clientClaimCache.set(cleanKey, unverifiedResult);
     saveRecentSearch(unverifiedResult.claim, unverifiedResult.verdict, unverifiedResult.confidence);
     renderDashboard(unverifiedResult);
     showToast("Unable to reach backend API. Claim marked UNVERIFIED.", "warning");
@@ -4042,6 +4097,15 @@ async function verifyOfflineWithTransformers(query) {
 
 async function verifyStandardClaim(query, forceRefresh = false) {
   if (state.loading) return;
+  const cleanKey = query.trim().toLowerCase();
+  if (!forceRefresh && clientClaimCache.has(cleanKey)) {
+    const cachedResult = clientClaimCache.get(cleanKey);
+    saveRecentSearch(cachedResult.claim, cachedResult.verdict, cachedResult.confidence);
+    renderDashboard(cachedResult);
+    showToast("Instant result loaded from client cache (<5ms)!", "success");
+    return;
+  }
+
   try {
     hide(dom.error);
     disableVerify();
@@ -4053,6 +4117,7 @@ async function verifyStandardClaim(query, forceRefresh = false) {
     if (!response.ok) throw new Error(`Server Error: ${response.status}`);
     const data = await response.json();
     const result = normalizeResponse(data, query);
+    clientClaimCache.set(cleanKey, result);
     saveRecentSearch(result.claim, result.verdict, result.confidence);
     renderDashboard(result);
     if (data.search_id && !data.cached) {
@@ -4064,12 +4129,14 @@ async function verifyStandardClaim(query, forceRefresh = false) {
     try {
       showToast("Backend offline: Switching to In-Browser AI...", "info");
       const offlineResult = await verifyOfflineWithTransformers(query);
+      clientClaimCache.set(cleanKey, offlineResult);
       saveRecentSearch(offlineResult.claim, offlineResult.verdict, offlineResult.confidence);
       renderDashboard(offlineResult);
       showToast(`In-browser AI verification complete: ${offlineResult.verdict} (${offlineResult.confidence}%)`, "success");
     } catch (offlineErr) {
       console.error("In-browser AI fallback error:", offlineErr);
       const unverifiedResult = getUnverifiedFallbackResult(query);
+      clientClaimCache.set(cleanKey, unverifiedResult);
       saveRecentSearch(unverifiedResult.claim, unverifiedResult.verdict, unverifiedResult.confidence);
       renderDashboard(unverifiedResult);
       showToast("Unable to reach backend API. Claim marked UNVERIFIED.", "warning");
@@ -4807,14 +4874,26 @@ function exportScorecardCSV() {
 
 // Override / Route verifyClaim to appropriate mode
 async function executeVerification() {
-  if (searchMode === "image" && selectedImageFile) {
+  if (searchMode === "image") {
+    if (!selectedImageFile) {
+      showToast("Please select or drop an image / meme file to verify.", "warning");
+      return;
+    }
     await verifyImage(selectedImageFile);
     return;
   }
 
   const query = dom.input?.value.trim() || "";
   if (!query) {
-    showToast("Please enter a claim, URL, or article to verify.", "warning");
+    if (searchMode === "url") {
+      showToast("Please enter a valid URL to deep-scan.", "warning");
+    } else if (searchMode === "article") {
+      showToast("Please paste article text to analyze.", "warning");
+    } else if (searchMode === "batch") {
+      showToast("Please enter numbered claims or a multi-line transcript.", "warning");
+    } else {
+      showToast("Please enter a claim or statement to verify.", "warning");
+    }
     return;
   }
 
@@ -5012,6 +5091,8 @@ document.addEventListener("DOMContentLoaded", () => {
   initTypewriterPlaceholder();
   renderRecentSearches();
   checkBackend();
+  dom.input?.addEventListener("focus", prewarmBackend, { once: true });
+  dom.input?.addEventListener("mouseenter", prewarmBackend, { once: true });
   initScrollReveal();
   initTechToggle();
   initCommandPalette();
