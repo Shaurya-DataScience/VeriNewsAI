@@ -2,7 +2,7 @@
    VeriNews AI — PWA Service Worker (Offline Support)
    ========================================================== */
 
-const CACHE_NAME = "verinews-cache-v1";
+const CACHE_NAME = "verinews-cache-v2";
 const STATIC_ASSETS = [
   "./",
   "./index.html",
@@ -54,19 +54,16 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Network-First for API verification routes
+  // Network-only for API verification routes — never masquerade network drops/timeouts as 200 OK
   if (url.pathname.startsWith("/api") || url.pathname.startsWith("/search") || url.pathname.startsWith("/stream_summary")) {
     event.respondWith(
-      fetch(event.request).catch(() => {
+      fetch(event.request).catch((err) => {
         return new Response(
           JSON.stringify({
-            claim: "Offline Query",
-            verdict: "UNVERIFIED",
-            confidence: 0,
-            summary: "You are currently offline. Connect to the internet for live real-time web verification.",
-            cached: false
+            error: "Backend container is warming up or temporarily unreachable",
+            details: String(err)
           }),
-          { headers: { "Content-Type": "application/json" } }
+          { status: 503, statusText: "Service Unavailable", headers: { "Content-Type": "application/json" } }
         );
       })
     );

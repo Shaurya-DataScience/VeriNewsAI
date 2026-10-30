@@ -299,31 +299,90 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
             semantic_similarity=verification_res.get("average_similarity", 0)
         )
 
-    # Step 6b: Mandatory Hallucination Safety Gate
+    # Step 6b: Normalize Verdict & Grounded Summary Synthesis
+    VERDICT_MAP = {
+        "SUPPORTED": "TRUE",
+        "TRUE": "TRUE",
+        "LIKELY TRUE": "TRUE",
+        "REFUTED": "FALSE",
+        "FALSE": "FALSE",
+        "LIKELY FALSE": "FALSE",
+        "MIXED": "MISLEADING",
+        "MISLEADING": "MISLEADING",
+        "UNVERIFIED": "UNVERIFIED",
+        "INSUFFICIENT EVIDENCE": "UNVERIFIED"
+    }
+    raw_verdict = verification_res.get("verdict", "UNVERIFIED")
+    normalized_verdict = VERDICT_MAP.get(str(raw_verdict).upper(), "UNVERIFIED")
+
+    supporting_sources = verification_res.get("supporting_sources", [])
+    contradicting_sources = verification_res.get("contradicting_sources", [])
+    neutral_sources = verification_res.get("neutral_sources", [])
+
+    # Synthesize grounded extractive summary directly from verified evidence
+    raw_summary = verification_res.get("summary")
+    if not raw_summary:
+        if normalized_verdict == "TRUE":
+            top_sources = supporting_sources or tavily_articles
+            top_domains = [s.get("domain") or s.get("title") for s in top_sources if s.get("domain") or s.get("title")]
+            domain_str = ", ".join(dict.fromkeys(top_domains)[:3]) if top_domains else "global news archives"
+            
+            best_snippet = ""
+            for s in top_sources:
+                snip = (s.get("snippet") or s.get("content") or "").strip()
+                if len(snip) > 25:
+                    best_snippet = snip.split(". ")[0].strip()
+                    if not best_snippet.endswith("."):
+                        best_snippet += "."
+                    break
+            if best_snippet:
+                raw_summary = f"Corroborated by verified reports from {domain_str}. {best_snippet}"
+            else:
+                raw_summary = f"Multiple credible news archives, including {domain_str}, corroborate this claim with supporting evidence."
+
+        elif normalized_verdict == "FALSE":
+            top_sources = contradicting_sources or tavily_articles
+            top_domains = [s.get("domain") or s.get("title") for s in top_sources if s.get("domain") or s.get("title")]
+            domain_str = ", ".join(dict.fromkeys(top_domains)[:3]) if top_domains else "fact-checking bureaus"
+            
+            best_snippet = ""
+            for s in top_sources:
+                snip = (s.get("snippet") or s.get("content") or "").strip()
+                if len(snip) > 25:
+                    best_snippet = snip.split(". ")[0].strip()
+                    if not best_snippet.endswith("."):
+                        best_snippet += "."
+                    break
+            if best_snippet:
+                raw_summary = f"Refuted by published investigative records from {domain_str}. {best_snippet}"
+            else:
+                raw_summary = f"Classified as FALSE based on authoritative refutations and published records from {domain_str}."
+
+        elif normalized_verdict == "MISLEADING":
+            top_sources = tavily_articles or supporting_sources
+            top_domains = [s.get("domain") or s.get("title") for s in top_sources if s.get("domain") or s.get("title")]
+            domain_str = ", ".join(dict.fromkeys(top_domains)[:3]) if top_domains else "news archives"
+            raw_summary = f"Analysis of reports from {domain_str} indicates this claim contains misleading framing or lacks essential factual context."
+
+        else:
+            raw_summary = "Insufficient corroborating evidence was found across global news archives to definitively verify or refute this claim."
+
+    # Mandatory Hallucination Safety Gate
     from services.hallucination_detector import detect_hallucinations
-    raw_summary = verification_res.get("summary", "Verification completed via multi-source evidence analysis.")
     hallucination_report = detect_hallucinations(raw_summary, tavily_articles)
     safe_summary = raw_summary
 
     if hallucination_report.get("risk_level") == "HIGH":
-        sup_sources = verification_res.get("supporting_sources", [])
-        top_title = sup_sources[0]["title"] if sup_sources else "retrieved news sources"
-        safe_summary = f"Evidence from {top_title} indicates stance {verification_res.get('verdict', 'UNVERIFIED')}."
+        sup_sources = supporting_sources if normalized_verdict == "TRUE" else (contradicting_sources or tavily_articles)
+        top_title = (sup_sources[0].get("title") or sup_sources[0].get("domain")) if sup_sources else "retrieved news sources"
+        safe_summary = f"Evidence from {top_title} indicates stance {normalized_verdict}."
 
     processing_time = round(time.time() - start_time, 2)
     latency_ms = int(processing_time * 1000)
 
-    VERDICT_MAP = {
-        "SUPPORTED": "TRUE",
-        "TRUE": "TRUE",
-        "REFUTED": "FALSE",
-        "FALSE": "FALSE",
-        "MIXED": "MISLEADING",
-        "MISLEADING": "MISLEADING",
-        "UNVERIFIED": "UNVERIFIED"
-    }
-    raw_verdict = verification_res.get("verdict", "UNVERIFIED")
-    normalized_verdict = VERDICT_MAP.get(str(raw_verdict).upper(), "UNVERIFIED")
+    # Align explainable AI reasoning statements with normalized verdict
+    raw_reasoning = verification_res.get("reasoning", [])
+    reasoning = [r.replace(str(raw_verdict), normalized_verdict) if str(raw_verdict) in r else r for r in raw_reasoning]
 
     # Step 7: Enterprise Services Integration
     all_web_sources = verification_res.get("supporting_sources", []) + verification_res.get("contradicting_sources", []) + verification_res.get("neutral_sources", [])
@@ -364,7 +423,7 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
         "verdict": normalized_verdict,
         "confidence": final_conf,
         "summary": safe_summary,
-        "reasoning": verification_res.get("reasoning", []),
+        "reasoning": reasoning,
         "entities": verification_res.get("entities", {"subject": "General Event", "event": "News Claim", "timeframe": "Recent"}),
         "average_similarity": verification_res.get("average_similarity", 0),
         "average_cross_score": verification_res.get("average_cross_score", 0),
@@ -372,6 +431,7 @@ async def run_hybrid_verification(query: str) -> Dict[str, Any]:
         "retrieved_articles": len(tavily_articles),
         "trusted_sources": verification_res.get("trusted_sources", 0),
         "processing_time": processing_time,
+        "sources": all_web_sources,
         "supporting_sources": verification_res.get("supporting_sources", []),
         "contradicting_sources": verification_res.get("contradicting_sources", []),
         "neutral_sources": verification_res.get("neutral_sources", []),

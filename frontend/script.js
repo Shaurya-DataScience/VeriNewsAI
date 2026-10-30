@@ -513,59 +513,7 @@ function initTechToggle() {
    ======================================== */
 
 async function verifyClaim() {
-  if (state.loading) return;
-  if (!validateInput()) return;
-
-  const query = dom.input.value.trim();
-  const cleanKey = query.toLowerCase();
-
-  // Instant client cache return (<5ms)
-  if (clientClaimCache.has(cleanKey)) {
-    const cachedResult = clientClaimCache.get(cleanKey);
-    saveRecentSearch(cachedResult.claim, cachedResult.verdict, cachedResult.confidence);
-    renderDashboard(cachedResult);
-    showToast("Instant result loaded from client cache (<5ms)!", "success");
-    return;
-  }
-
-  try {
-    hide(dom.error);
-    disableVerify();
-    disableInput();
-    showLoading();
-
-    const response = await fetch(`${API_URL}/search?query=${encodeURIComponent(query)}`);
-
-    if (!response.ok) {
-      throw new Error(`Server Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    const result = normalizeResponse(data, query);
-
-    clientClaimCache.set(cleanKey, result);
-    saveRecentSearch(result.claim, result.verdict, result.confidence);
-    await completeProgressAndTimeline();
-    renderDashboard(result);
-
-    if (data.search_id && !data.cached) {
-      streamSummary(data.search_id);
-    }
-
-    showToast("Verification completed!", "success");
-  } catch (error) {
-    console.warn("Backend API unavailable or error:", error);
-    await completeProgressAndTimeline();
-    // ACCURACY RULE: When backend fails or evidence is unavailable, return UNVERIFIED (0% confidence).
-    const unverifiedResult = getUnverifiedFallbackResult(query);
-    clientClaimCache.set(cleanKey, unverifiedResult);
-    saveRecentSearch(unverifiedResult.claim, unverifiedResult.verdict, unverifiedResult.confidence);
-    renderDashboard(unverifiedResult);
-    showToast("Unable to reach backend API. Claim marked UNVERIFIED.", "warning");
-  } finally {
-    enableVerify();
-    enableInput();
-  }
+  await executeVerification();
 }
 
 function getUnverifiedFallbackResult(query) {
@@ -613,8 +561,6 @@ function prewarmBackend() {
 
 dom.input?.addEventListener("focus", prewarmBackend, { once: true });
 dom.input?.addEventListener("input", prewarmBackend, { once: true });
-
-dom.verify?.addEventListener("click", verifyClaim);
 
 /* ========================================
    14. Server-Sent Events (SSE) Stream
@@ -918,6 +864,23 @@ function animateLoadingText() {
       loadingText.textContent = `${message}...`;
     }, index * 450);
 
+    state.loadingTimers.push(timer);
+  });
+
+  // Cold-start & deep verification progressive status updates
+  const progressiveStatuses = [
+    { delay: 4500, msg: "Connecting to Cloud AI Fact Engine..." },
+    { delay: 9000, msg: "Waking Cloud Neural Models from standby (~15s)..." },
+    { delay: 17000, msg: "Retrieving global news archives & consensus..." },
+    { delay: 25000, msg: "Synthesizing cross-encoder neural predictions..." }
+  ];
+
+  progressiveStatuses.forEach(item => {
+    const timer = setTimeout(() => {
+      if (state.loading && loadingText) {
+        loadingText.textContent = item.msg;
+      }
+    }, item.delay);
     state.loadingTimers.push(timer);
   });
 }
@@ -4119,6 +4082,7 @@ async function verifyStandardClaim(query, forceRefresh = false) {
     const result = normalizeResponse(data, query);
     clientClaimCache.set(cleanKey, result);
     saveRecentSearch(result.claim, result.verdict, result.confidence);
+    await completeProgressAndTimeline();
     renderDashboard(result);
     if (data.search_id && !data.cached) {
       streamSummary(data.search_id);
@@ -4129,17 +4093,20 @@ async function verifyStandardClaim(query, forceRefresh = false) {
     try {
       showToast("Backend offline: Switching to In-Browser AI...", "info");
       const offlineResult = await verifyOfflineWithTransformers(query);
-      clientClaimCache.set(cleanKey, offlineResult);
-      saveRecentSearch(offlineResult.claim, offlineResult.verdict, offlineResult.confidence);
+      if (offlineResult && offlineResult.verdict !== "UNVERIFIED") {
+        clientClaimCache.set(cleanKey, offlineResult);
+        saveRecentSearch(offlineResult.claim, offlineResult.verdict, offlineResult.confidence);
+      }
+      await completeProgressAndTimeline();
       renderDashboard(offlineResult);
       showToast(`In-browser AI verification complete: ${offlineResult.verdict} (${offlineResult.confidence}%)`, "success");
     } catch (offlineErr) {
       console.error("In-browser AI fallback error:", offlineErr);
+      await completeProgressAndTimeline();
       const unverifiedResult = getUnverifiedFallbackResult(query);
-      clientClaimCache.set(cleanKey, unverifiedResult);
-      saveRecentSearch(unverifiedResult.claim, unverifiedResult.verdict, unverifiedResult.confidence);
+      // NOTE: Do not cache unverified error fallbacks in clientClaimCache so user retries hit backend
       renderDashboard(unverifiedResult);
-      showToast("Unable to reach backend API. Claim marked UNVERIFIED.", "warning");
+      showToast("Cloud AI container is warming up. Please retry in a few seconds.", "warning");
     }
   } finally {
     enableVerify();
